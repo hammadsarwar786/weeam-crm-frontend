@@ -1,0 +1,259 @@
+@import url("https://fonts.googleapis.com/css2?family=DM+Sans:ital,wght@0,400;0,500;0,700;1,400;1,500;1,700&display=swap");
+
+body, html {
+  font-family: "DM Sans", sans-serif;
+}
+
+option {
+  color: black;
+}
+
+* {
+  letter-spacing: 0.3px;
+  outline: none;
+}
+
+::-webkit-scrollbar {
+  height: 4px !important;
+  width: 7px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #b9b9b9;
+  border-radius: 20px;
+}
+
+.css-70fard,
+.apexcharts-toolbar {
+  z-index: 0 !important;
+}
+
+.fc-bg-event {
+  opacity: 1 !important;
+}
+
+.p0 {
+  margin-top: 0;
+}
+
+/* TABLE  */
+.table-container {
+  min-height: 23vh;
+  max-height: 23vh;
+  overflow-y: auto;
+}
+
+.table-container thead {
+  border-bottom: 1px solid black;
+  box-shadow: -2px 0px 4px -2px #5c5d5efa;
+  position: sticky;
+  top: 0;
+  height: 25px;
+  background: #ffffff;
+}
+
+.table-container-property {
+  min-height: auto;
+  max-height: 68vh;
+  overflow-y: auto;
+}
+
+.css-efk3t2 {
+  max-height: 15rem !important;
+  overflow-y: scroll !important;
+}
+
+.table-container-property thead {
+  position: sticky;
+  top: 0;
+  height: 25px;
+  background: #ffffff;
+}
+
+.table-fix-container {
+  min-height: 63vh;
+  max-height: 63vh;
+  overflow-y: auto;
+}
+
+.table-fix-container thead {
+  border-bottom: 1px solid black;
+  box-shadow: -2px 0px 4px -2px #5c5d5efa;
+  position: sticky;
+  top: 0;
+  height: 25px;
+  background: #ffffff;
+}
+
+.importTable {
+  min-height: auto;
+  max-height: 82vh;
+  overflow-y: auto;
+}
+
+.tableData {
+  padding: 10px !important;
+}
+
+/* .leadRow td {
+  border-bottom: 1px solid #e2e8f0;
+} */
+
+.datePickerBorder {
+  border: 1px solid #e2e8f0;
+  padding: 0 5px;
+  border-radius: 5px;
+  margin: 0 10px !important;
+}
+
+.imageCard {
+  position: relative;
+  overflow: hidden;
+  margin-right: 12px;
+  /* height: 200px;
+  width: 400px; */
+}
+
+.imageContent {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: #00000096;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+}
+
+.imageCard:hover .imageContent {
+  opacity: 1;
+}
+
+.EditDelete {
+  display: none;
+}
+
+.CustomFieldName {
+  border-bottom: 1px solid rgba(128, 128, 128, 0.705);
+}
+
+.CustomFieldName:hover .EditDelete {
+  display: block;
+}
+
+.pending {
+  background-color: #fbf4dd !important;
+  color: #a37f08 !important;
+  border: 1px solid #a37f08 !important;
+}
+
+.onHold {
+  background-color: #ffeeeb !important;
+  color: #db5436 !important;
+  border: 1px solid #db5436 !important;
+}
+
+.completed {
+  background-color: #eaf9e6 !important;
+  color: #4d8f3a !important;
+  border: 1px solid #4d8f3a !important;
+}
+
+.toDo {
+  background-color: #ebf5ff !important;
+  color: #1f7eeb !important;
+  border: 1px solid #1f7eeb !important;
+}
+
+.inProgress {
+  background-color: #eee7fc !important;
+  color: #7038db !important;
+  border: 1px solid #7038db !important;
+}
+
+progress {
+  box-sizing: border-box;
+  border: solid 0.15em white;
+  width: 100%;
+  margin: 5px 0 20px 0; 
+  height: 1em;
+  border-radius: 0.5em;
+  background: #92abe7bd;
+  font: clamp(0.625em, 7.5vw, 5em) monospace;
+  position: relative; 
+}
+
+progress.mini.navbar{
+  vertical-align: revert;
+}
+
+progress.mini {
+  height: 30px; 
+  border: solid 4px white; 
+  margin: 0; 
+}
+
+progress::before {
+  content: attr(data-content); 
+  position: absolute; 
+  left: 50%; 
+  top: 50%; 
+  transform: translate(-50%, -50%);
+  color: white; 
+  font-weight: bold;
+  font-size: 28px;
+}
+
+progress.mini.navbar::before {
+  font-size: 16px; 
+}
+
+
+progress::-webkit-progress-bar {
+  background: transparent;
+}
+progress::-webkit-progress-value {
+  border-radius: 0.35em;
+  box-shadow: inset 0 0.05em 0.05em rgba(255, 255, 255, 0.35);
+  background: var(--fill);
+}
+progress::-moz-progress-bar {
+  border-radius: 0.35em;
+  box-shadow: inset 0 0.05em 0.05em rgba(255, 255, 255, 0.35);
+  background: var(--fill);
+}
+progress {
+  --fill: linear-gradient(#1b00e5, transparent),
+    repeating-linear-gradient(135deg, #2b14db 0 0.25em, #1f0da8 0 0.5em);
+}
+
+
+.chakra-ui-dark input {
+  color: white; 
+}
+
+.chakra-ui-dark .chakra-tabs__tab-panel button {
+  color: #B79045; 
+}
+
+
+#generate-proposal-btn:hover {
+  background-image: linear-gradient(to right, #34ca00, #00ee47);
+}
+
+
+  .auth-form {
+    width: 50%; 
+  }
+
+@media all and (max-width: 560px) {
+  .auth-image {
+    display: none; 
+  }
+  .auth-form {
+    width: 100%; 
+  }
+}
