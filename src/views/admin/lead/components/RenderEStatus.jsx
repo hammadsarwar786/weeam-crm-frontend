@@ -31,13 +31,15 @@ const RenderEStatus = ({ id, cellValue, setUpdatedEStatus }) => {
 	};
 
 	useEffect(() => {
-		setValue(cellValue || "new");
+		setValue(cellValue || "");
 	}, [id]);
+
+	console.log(value);
 
 	return (
 		<>
 			<Select
-				defaultValue={"null"}
+				defaultValue=""
 				onChange={setStatusData}
 				height={7}
 				width={130}
@@ -49,9 +51,10 @@ const RenderEStatus = ({ id, cellValue, setUpdatedEStatus }) => {
 					border: "1px solid #0891b2",
 					padding: "4px 8px",
 				}}
-				placeholder="Choose E.Status"
 			>
-				{/* <option value="null">Choose E.Status</option> */}
+				<option value="" disabled style={{ color: "#444" }}>
+					Choose E.Status
+				</option>
 				<option value="interested">Interested</option>
 				<option value="junk">Junk</option>
 				<option value="not-interested">Not interested</option>
