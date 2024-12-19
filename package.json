@@ -19,7 +19,7 @@
     "@reduxjs/toolkit": "^2.0.1",
     "@stripe/react-stripe-js": "^2.3.0",
     "@stripe/stripe-js": "^2.1.6",
-    "apexcharts": "^3.41.1",
+    "apexcharts": "^1.41.1",
     "axios": "^1.4.0",
     "chakra-ui-autocomplete": "^1.4.5",
     "exceljs": "^4.4.0",

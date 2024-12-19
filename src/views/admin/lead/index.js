@@ -162,11 +162,11 @@ const Index = () => {
 						pageNo +
 						"&pageSize=" +
 						pageSize
-				: `api/lead/?user=${user._id}&role=${
-						user.roles[0]?.roleName
-				  }&dateTime=${
-						dateTime?.from + "|" + dateTime?.to
-				  }&page=${pageNo}&pageSize=${pageSize}`
+				: `api/lead/?user=${user._id}&role=${user.roles[0]?.roleName}&page=${pageNo}&pageSize=${pageSize}`
+
+			// &dateTime=${
+			// 			dateTime?.from + "|" + dateTime?.to
+			// 	  }
 		);
 		const newData = result.data?.result?.map((lead) => {
 			if (lead?.ip) {

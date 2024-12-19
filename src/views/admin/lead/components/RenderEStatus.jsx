@@ -42,7 +42,7 @@ const RenderEStatus = ({ id, cellValue, setUpdatedEStatus }) => {
 				defaultValue=""
 				onChange={setStatusData}
 				height={7}
-				width={130}
+				width={150}
 				value={value || ""}
 				style={{
 					fontSize: "14px",
@@ -52,7 +52,7 @@ const RenderEStatus = ({ id, cellValue, setUpdatedEStatus }) => {
 					padding: "4px 8px",
 				}}
 			>
-				<option value="" disabled style={{ color: "#444" }}>
+				<option value="" disabled style={{ color: "#999" }}>
 					Choose E.Status
 				</option>
 				<option value="interested">Interested</option>

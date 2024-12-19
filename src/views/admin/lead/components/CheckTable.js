@@ -357,7 +357,7 @@ export default function CheckTable(props) {
 			manualPagination: true,
 			state: { columnVisibility },
 			onColumnVisibilityChange: setColumnVisibility,
-			initialState: { pageIndex: updatedPage, pageSize: 200 },
+			initialState: { pageIndex: updatedPage, pageSize: 30 },
 			pageCount: pages,
 		},
 		useGlobalFilter,
@@ -822,7 +822,11 @@ export default function CheckTable(props) {
 					>
 						<Thead zIndex={1}>
 							{headerGroups?.map((headerGroup, index) => (
-								<Tr {...headerGroup.getHeaderGroupProps()} key={index}>
+								<Tr
+									backgroundColor="#ebd3a6"
+									{...headerGroup.getHeaderGroupProps()}
+									key={index}
+								>
 									{headerGroup.headers?.map((column, index) => (
 										<Th
 											{...column.getHeaderProps(
