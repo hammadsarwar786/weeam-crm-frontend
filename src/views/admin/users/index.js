@@ -16,6 +16,7 @@ const Index = () => {
     { Header: "first Name", accessor: "firstName" },
     { Header: "last Name", accessor: "lastName" },
     { Header: "role", accessor: "roles[0].roleName" },
+    { Header: "Coins", accessor: "coins" },
     { Header: "Action", isSortable: false, center: true },
   ];
   const [action, setAction] = useState(false);
@@ -61,6 +62,7 @@ const Index = () => {
         allData={data}
         displaySearchData={displaySearchData}
         tableData={displaySearchData ? searchedData : data}
+        setData={setData}
         fetchData={fetchData}
         dataColumn={dataColumn}
         setDisplaySearchData={setDisplaySearchData}

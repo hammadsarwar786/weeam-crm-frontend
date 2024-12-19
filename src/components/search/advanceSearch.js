@@ -19,7 +19,8 @@ const AdvanceSearch = ({ setAdvaceSearch, advaceSearch, isLoding, allData, setDi
         leadName: yup.string(),
         leadStatus: yup.string(),
         leadEmail: yup.string().email("Lead Email is invalid"),
-        leadPhoneNumber: yup.number().typeError('Enter Number').min(0, 'Lead Phone Number is invalid').max(999999999999, 'Lead Phone Number is invalid').notRequired(),
+        // leadPhoneNumber: yup.number().typeError('Enter Number').min(0, 'Lead Phone Number is invalid').max(999999999999, 'Lead Phone Number is invalid').notRequired(),
+        leadPhoneNumber: yup.string().matches(/^\+?\d*$/, 'Enter a valid phone number').notRequired(),
         leadAddress: yup.string(),
         leadOwner: yup.string(),
         fromLeadScore: yup.number().min(0, "From Lead Score is invalid"),
@@ -29,6 +30,8 @@ const AdvanceSearch = ({ setAdvaceSearch, advaceSearch, isLoding, allData, setDi
         initialValues: initialValues,
         validationSchema: validationSchema,
         onSubmit: (values, { resetForm }) => {
+            console.log('Submitted values:', values);
+            alert("Submitted values:");
             const searchResult = allData?.filter(
                 (item) =>
                     (!values?.leadName || (item?.leadName && item?.leadName.toLowerCase().includes(values?.leadName?.toLowerCase()))) &&
@@ -125,9 +128,10 @@ const AdvanceSearch = ({ setAdvaceSearch, advaceSearch, isLoding, allData, setDi
                                 name="leadPhoneNumber"
                                 placeholder='Enter Lead PhoneNumber'
                                 fontWeight='500'
+                                type="tel"  // Use "tel" instead of "text" for phone input
+                                pattern="^\+?\d{0,15}$"  // Ensure pattern allows for the '+' sign
                             />
                             <Text mb='10px' color={'red'}> {errors.leadPhoneNumber && touched.leadPhoneNumber && errors.leadPhoneNumber}</Text>
-
                         </GridItem>
 
                         <GridItem colSpan={{ base: 12, md: 6 }}>

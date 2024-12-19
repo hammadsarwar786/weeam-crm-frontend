@@ -1,5 +1,6 @@
 
 import {
+  Box,
   Button,
   CircularProgress,
   Flex,
@@ -16,6 +17,7 @@ import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import axios from "axios";
 import { constant } from "constant";
+import { FaCoins } from "react-icons/fa6";
 const Index = () => {
   const user = JSON.parse(localStorage.getItem("user"));
   const role = user?.roles[0]?.roleName;
@@ -27,8 +29,10 @@ const Index = () => {
     { Header: "Phone Number", accessor: "leadPhoneNumber" },
     { Header: "Lead Email", accessor: "leadEmail" },
     { Header: "Nationality", accessor: "nationality" },
-    { Header: "Intrest", accessor: "interest" },
+    { Header: "Interest", accessor: "leadId?.interest" },
     { Header: "Last Note", width: 100, accessor: "lastNote" },
+    { Header: "Lead Status", width: 100, accessor: "leadId.leadStatus" },
+        { Header: "Date And Time", accessor: "createdAt" },
     // { Header: "Status", accessor: "leadStatus" },
     { Header: "Lead Approval", accessor: "leadWhatsappNumber" },
     // { Header: "Action", isSortable: false, center: true },
@@ -36,23 +40,22 @@ const Index = () => {
   const [tableColumnsManager,setTableColumnsManager] = useState([
     { Header: "#", accessor: "_id", isSortable: false, width: 10 },
     { Header: "Name", accessor: "leadName", width: 20 },
-    { Header: "Manager", accessor: "managerAssigned" },
-    { Header: "Agent", accessor: "agentAssigned" },
-    { Header: "Status", accessor: "leadStatus" },
-    { Header: "Approval Status", accessor: "leadWhatsappNumber" },
-    { Header: "Intrest", accessor: "interest" },
-    { Header: "Nationality", accessor: "nationality" },
+    // { Header: "Manager", accessor: "managerAssigned" },
+    // { Header: "Agent", accessor: "agentAssigned" },
+    // { Header: "Approval Status", accessor: "leadWhatsappNumber" },
+    // { Header: "Intrest", accessor: "interest" },
+    // { Header: "Nationality", accessor: "nationality" },
     { Header: "Action", isSortable: false, center: true },
   ]);
   const [ tableColumnsAgent, setTableColumnsAgent] = useState( [
     { Header: "#", accessor: "_id", isSortable: false, width: 10 },
     { Header: "Name", accessor: "leadName", width: 20 },
-    { Header: "Manager", accessor: "managerAssigned" },
     { Header: "Agent", accessor: "agentAssigned" },
     { Header: "Status", accessor: "leadStatus" },
     { Header: "Approval Status", accessor: "leadWhatsappNumber" },
+        { Header: "Date And Time", accessor: "createdAt" },
     { Header: "Intrest", accessor: "interest" },
-    { Header: "Nationality", accessor: "nationality" },
+    // { Header: "Nationality", accessor: "nationality" },
     { Header: "Action", isSortable: false, center: true },
   ]);
   const roleColumns = {
@@ -72,6 +75,7 @@ const Index = () => {
   const tree = useSelector((state) => state.user.tree);
 
   
+  const [totalCoins, setTotalCoins] = useState(0); 
   const [dynamicColumns, setDynamicColumns] = useState(
     roleColumns[role] || tableColumns
   );
@@ -132,27 +136,27 @@ const Index = () => {
       setTableColumnsManager([
         { Header: "#", accessor: "intID", isSortable: false, width: 10 },
         { Header: "Name", accessor: "leadName", width: 20 },
-        { Header: "Manager", accessor: "managerAssigned" },
-        { Header: "Agent", accessor: "agentId" },
-        { Header: "Status", accessor: "leadStatus" },
-        { Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
-        { Header: "Phone Number", accessor: "leadPhoneNumber" },
-        { Header: "Date And Time", accessor: "createdDate" },
-        { Header: "Timetocall", accessor: "timetocall" },
-        { Header: "Nationality", accessor: "nationality" },
+        { Header: "Date And Time", accessor: "createdAt" },
+        // { Header: "Manager", accessor: "managerAssigned" },
+        // { Header: "Agent", accessor: "agentId" },
+        // { Header: "Status", accessor: "leadStatus" },
+        // { Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
+        // { Header: "Phone Number", accessor: "leadPhoneNumber" },
+        // { Header: "Date And Time", accessor: "createdDate" },
+        // { Header: "Timetocall", accessor: "timetocall" },
+        // { Header: "Nationality", accessor: "nationality" },
         // { Header: "Action", isSortable: false, center: true },
       ])
       setTableColumnsAgent([
         { Header: "#", accessor: "intID", isSortable: false, width: 10 },
         { Header: "Name", accessor: "leadName", width: 20 },
-        { Header: "Manager", accessor: "managerAssigned" },
         { Header: "Agent", accessor: "agentAssigned" },
         { Header: "Status", accessor: "leadStatus" },
-        { Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
-        { Header: "Phone Number", accessor: "leadPhoneNumber" },
+        // { Header: "Whatsapp Number", accessor: "leadWhatsappNumber" },
+        // { Header: "Phone Number", accessor: "leadPhoneNumber" },
         { Header: "Date And Time", accessor: "createdDate" },
         { Header: "Timetocall", accessor: "timetocall" },
-        { Header: "Nationality", accessor: "nationality" },
+        // { Header: "Nationality", accessor: "nationality" },
         // { Header: "Action", isSortable: false, center: true },
       ])
     }else{
@@ -160,12 +164,12 @@ const Index = () => {
         // { Header: "#", accessor: "_id", isSortable: false, width: 10 },
     { Header: "Name", accessor: "leadName", width: 20 },
     // { Header: "Manager", accessor: "managerAssigned" },
+    //     { Header: "Nationality", accessor: "nationality" },
+    //     { Header: "Date And Time", accessor: "createdDate" },
+    // { Header: "Status", accessor: "leadStatus" },
     // { Header: "Agent", accessor: "agentAssigned" },
     // { Header: "Status", accessor: "leadStatus" },
     // { Header: "Approval Status", accessor: "leadWhatsappNumber" },
-    { Header: "Nationality", accessor: "nationality" },
-    { Header: "Last Note", width: 100, accessor: "lastNote" },
-    { Header: "Intrest", accessor: "interest" },
     
     currentState==="all_leads"&& { Header: "Action", isSortable: false, center: true },
       ])
@@ -174,11 +178,10 @@ const Index = () => {
     { Header: "Name", accessor: "leadName", width: 20 },
     // { Header: "Manager", accessor: "managerAssigned" },
     // { Header: "Agent", accessor: "agentAssigned" },
-    // { Header: "Status", accessor: "leadStatus" },
+        { Header: "Nationality", accessor: "nationality" },
+        { Header: "Date And Time", accessor: "createdDate" },
+    { Header: "Status", accessor: "leadStatus" },
     // { Header: "Approval Status", accessor: "leadWhatsappNumber" },
-    { Header: "Nationality", accessor: "nationality" },
-    { Header: "Last Note", width: 100, accessor: "lastNote" },
-    { Header: "Intrest", accessor: "interest" },
     currentState==="all_leads"&& { Header: "Action", isSortable: false, center: true },
     
       ])
@@ -230,7 +233,8 @@ useEffect(()=>{
               "&page=" +
               pageNo +
               "&pageSize=" +
-              pageSize+"&isInLeadPool=true"
+              pageSize+`&role=${
+              user.roles[0]?.roleName}` + "&isInLeadPool=true"
           : `api/lead/?user=${user._id}&role=${
               user.roles[0]?.roleName
             }&dateTime=${
@@ -264,6 +268,7 @@ useEffect(()=>{
       params:{
         approvalStatus:currentState==="all_leads"?"":currentState,
         page:pageNo,
+
         pageSize,
         managerId:( user?.roles[0]?.roleName == "Manager")?user?._id:"",
         agentId:( user?.roles[0]?.roleName == "Agent")?user?._id:""
@@ -326,90 +331,105 @@ useEffect(()=>{
   useEffect(() => {
     setColumns(tableColumns);
   }, [action]);
-console.log(dynamicColumns,"manager")
   return (
-    <div >
-      <Button  onClick={()=> setCurrentState("all_leads") } sx={{
-        backgroundColor:currentState == "all_leads"&&"#B79045",
-        color:currentState == "all_leads"&&"white",
-        "_hover":{
-        backgroundColor:currentState == "all_leads"&&"#B79045",
-        }
-      }}> { user?.role !== "superAdmin" ? "All Leads" : "All Lead Requests" }</Button>
-      <Button  onClick={()=> setCurrentState("pending") } 
-        sx={{
+    <div>
+    {user?.role !== "superAdmin" && <Box py={5}>
+      <h2 style={{
+        fontSize: 24, 
+        fontWeight: "bold", 
+        background: "black", 
+        color: "white", 
+        padding: "0 8px",
+        display: "flex", 
+        alignItems: "center", 
+        width: "max-content"
+      }}><FaCoins style={{marginRight: 5}} size={18}/>Available Coins: {totalCoins} </h2>
+    </Box>
+    }
+      <div>
+        <Button  onClick={()=> setCurrentState("all_leads") } sx={{
+          backgroundColor:currentState == "all_leads"&&"#B79045",
+          color:currentState == "all_leads"&&"white",
+          "_hover":{
+          backgroundColor:currentState == "all_leads"&&"#B79045",
+          }
+        }}>All Leads</Button>
+        <Button  onClick={()=> setCurrentState("pending") }
+          sx={{
+            backgroundColor:currentState == "pending"&&"#B79045",
+          color:currentState == "pending"&&"white",
+          "_hover":{
           backgroundColor:currentState == "pending"&&"#B79045",
-        color:currentState == "pending"&&"white",
-        "_hover":{
-        backgroundColor:currentState == "pending"&&"#B79045",
-        }
-        }}>Pending</Button>
-          <Button onClick={()=> setCurrentState("Accepted")} 
-            sx={{
-              backgroundColor:currentState == "Accepted"&&"#B79045",
-        color:currentState == "Accepted"&&"white",
-        "_hover":{
-        backgroundColor:currentState == "Accepted"&&"#B79045",
-        }
-            }}>Approved  Leads</Button>
-          <Button onClick={()=> setCurrentState("Rejected")}
-            sx={{
-              backgroundColor:currentState == "Rejected"&&"#B79045",
-        color:currentState == "Rejected"&&"white",
-        "_hover":{
-        backgroundColor:currentState == "Rejected"&&"#B79045",
-        }
-            }}>Rejected Leads</Button>
-      <Grid templateColumns="repeat(6, 1fr)" mt={3} mb={3} gap={4}>
+          }
+          }}>Pending</Button>
+            <Button onClick={()=> setCurrentState("Accepted")}
+              sx={{
+                backgroundColor:currentState == "Accepted"&&"#B79045",
+          color:currentState == "Accepted"&&"white",
+          "_hover":{
+          backgroundColor:currentState == "Accepted"&&"#B79045",
+          }
+              }}>Approved  Leads</Button>
+            <Button onClick={()=> setCurrentState("Rejected")}
+              sx={{
+                backgroundColor:currentState == "Rejected"&&"#B79045",
+          color:currentState == "Rejected"&&"white",
+          "_hover":{
+          backgroundColor:currentState == "Rejected"&&"#B79045",
+          }
+              }}>Rejected Leads</Button>
+        <Grid templateColumns="repeat(6, 1fr)" mb={3} gap={4}>
       
-
-        <GridItem colSpan={6}>
-        {role === "Manager" && 
-            <Flex justifyContent={"flex-end"} mb={4}>
-              {/* <Button
-                onClick={autoAssign}
-                bg={"black"}
-                disabled={autoAssignLoading}
-                rounded={"full"}
-                colorScheme={"white"}
-              >
-                {autoAssignLoading ? "Assigning.." : "Auto Assign"}
-              </Button> */}
-            </Flex>
-        }
-        
-          
-          <CheckTable
-           checkApproval = {checkApproval}
-            dateTime={dateTime}
-            setDateTime={setDateTime}
-            totalLeads={totalLeads}
-            isLoding={isLoding}
-            setIsLoding={setIsLoding}
-            pages={pages}
-            columnsData={roleColumns[role] || tableColumns}
-            isOpen={isOpen}
-            setAction={setAction}
-            dataColumn={dataColumn}
-            action={action}
-            fetchSearchedData={fetchSearchedData}
-            setSearchedData={setSearchedData}
-            allData={displaySearchData ? searchedData : data}
-            setData={setFilteredLeads}
-            displaySearchData={displaySearchData}
-            tableData={displaySearchData ? searchedData : data}
-            fetchData={fetchData}
-            setDisplaySearchData={setDisplaySearchData}
-            setDynamicColumns={setDynamicColumns}
-            dynamicColumns={dynamicColumns}
-            selectedColumns={selectedColumns}
-            access={permission}
-            setSelectedColumns={setSelectedColumns}
-            emailAccess={emailAccess}
-            callAccess={callAccess}
-          />
-        </GridItem>
-      </Grid>
+          <GridItem colSpan={6}>
+          {role === "Manager" &&
+              <Flex justifyContent={"flex-end"} mb={4}>
+                {/* <Button
+                  onClick={autoAssign}
+                  bg={"black"}
+                  disabled={autoAssignLoading}
+                  rounded={"full"}
+                  colorScheme={"white"}
+                >
+                  {autoAssignLoading ? "Assigning.." : "Auto Assign"}
+                </Button> */}
+              </Flex>
+          }
+      
+      
+            <CheckTable
+             checkApproval = {checkApproval}
+              dateTime={dateTime}
+              setDateTime={setDateTime}
+              totalLeads={data?.length}
+              isLoding={isLoding}
+              setIsLoding={setIsLoding}
+              pages={pages}
+              columnsData={roleColumns[role] || tableColumns}
+              isOpen={isOpen}
+              setAction={setAction}
+              dataColumn={dataColumn}
+              action={action}
+              fetchSearchedData={fetchSearchedData}
+              setSearchedData={setSearchedData}
+              allData={displaySearchData ? searchedData : data}
+              setData={setFilteredLeads}
+              displaySearchData={displaySearchData}
+              tableData={displaySearchData ? searchedData : data}
+              fetchData={fetchData}
+              setDisplaySearchData={setDisplaySearchData}
+              setDynamicColumns={setDynamicColumns}
+              dynamicColumns={dynamicColumns}
+              selectedColumns={selectedColumns}
+              access={permission}
+              setSelectedColumns={setSelectedColumns}
+              emailAccess={emailAccess}
+              callAccess={callAccess}
+              currentState={currentState}
+              setTotalCoins={setTotalCoins}
+            />
+          </GridItem>
+        </Grid>
+      </div>
     </div>
   );
 

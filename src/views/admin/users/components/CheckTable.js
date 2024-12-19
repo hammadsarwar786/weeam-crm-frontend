@@ -51,7 +51,7 @@ import Card from "components/card/Card";
 import CountUpComponent from "components/countUpComponent/countUpComponent";
 import Pagination from "components/pagination/Pagination";
 import Spinner from "components/spinner/Spinner";
-import { FaSort, FaSortDown, FaSortUp } from "react-icons/fa";
+import { FaCoins, FaSort, FaSortDown, FaSortUp } from "react-icons/fa";
 import { Link, useNavigate } from "react-router-dom";
 import Delete from "../Delete";
 import AddUser from "../Add";
@@ -64,6 +64,8 @@ import Edit from "../Edit";
 import DataNotFound from "components/notFoundData";
 import CustomSearchInput from "components/search/search";
 import CopyID from "./CopyID";
+import AddCoinsModal from "../AddCoinsModal";
+import RemoveCoinsModal from "../RemoveCoinsModal";
 
 export default function CheckTable(props) {
   // const { columnsData, action, setAction } = props;
@@ -82,6 +84,7 @@ export default function CheckTable(props) {
     dynamicColumns,
     setDynamicColumns,
     setAction,
+    setData,
     action,
   } = props;
 
@@ -96,6 +99,14 @@ export default function CheckTable(props) {
   const [gopageValue, setGopageValue] = useState();
   const { isOpen, onOpen, onClose } = useDisclosure();
   const [advaceSearch, setAdvaceSearch] = useState(false);
+  const [addCoinsModal, setAddCoinsModal] = useState({
+    user: null,
+    isOpen: false,
+  });
+  const [removeCoinsModal, setRemoveCoinsModal] = useState({
+    user: null,
+    isOpen: false,
+  });
   const [searchClear, setSearchClear] = useState(false);
   const [searchbox, setSearchbox] = useState("");
   const [manageColumns, setManageColumns] = useState(false);
@@ -516,15 +527,13 @@ export default function CheckTable(props) {
                               </Text>
                             </Flex>
                           );
-                        }
-                         else if (cell?.column.Header === "ID") {
+                        } else if (cell?.column.Header === "ID") {
                           data = (
-                              <Box widt="max-content">
-                                <CopyID value={row?.original?._id || ""}/>
-                              </Box>
+                            <Box widt="max-content">
+                              <CopyID value={row?.original?._id || ""} />
+                            </Box>
                           );
-                        }
-                         else if (cell?.column.Header === "email Id") {
+                        } else if (cell?.column.Header === "email Id") {
                           data = (
                             <Link to={`/userView/${cell?.row?.values._id}`}>
                               <Text
@@ -575,7 +584,19 @@ export default function CheckTable(props) {
                               {cell?.value}
                             </Text>
                           );
-                        } else if (cell?.column.Header === "Action") {
+                        }
+                        else if (cell?.column.Header === "Coins") {
+                          data = (
+                            <Text
+                              color={"blue"}
+                              fontSize="sm"
+                              fontWeight="700"
+                            >
+                              {cell?.value}
+                            </Text>
+                          );
+                        }
+                         else if (cell?.column.Header === "Action") {
                           data = (
                             <Text
                               fontSize="md"
@@ -613,6 +634,36 @@ export default function CheckTable(props) {
                                   >
                                     View
                                   </MenuItem>
+                                  {user?.role === "superAdmin" && (
+                                    <MenuItem
+                                      py={2.5}
+                                      color={"green"}
+                                      onClick={() =>
+                                        setAddCoinsModal({
+                                          user: row?.original?._id,
+                                          isOpen: true,
+                                        })
+                                      }
+                                      icon={<FaCoins mb={1} fontSize={15} />}
+                                    >
+                                      Add Coins
+                                    </MenuItem>
+                                  )}
+                                   {user?.role === "superAdmin" && (
+                                    <MenuItem
+                                      py={2.5}
+                                      color={"green"}
+                                      onClick={() =>
+                                        setRemoveCoinsModal({
+                                          user: row?.original,
+                                          isOpen: true,
+                                        })
+                                      }
+                                      icon={<FaCoins mb={1} fontSize={15} />}
+                                    >
+                                      Remove Coins
+                                    </MenuItem>
+                                  )}
                                   {cell?.row?.original?.role ===
                                   "superAdmin" ? (
                                     ""
@@ -687,6 +738,23 @@ export default function CheckTable(props) {
         data={editData}
         setEdit={setEdit}
         selectedId={selectedId}
+      />
+
+      <AddCoinsModal
+        isOpen={addCoinsModal?.isOpen}
+        setDisplaySearchData={setDisplaySearchData}
+        size={"sm"}
+        onClose={() => setAddCoinsModal({ isOpen: false, user: null })}
+        fetchData={fetchData}
+        selectedUser={addCoinsModal?.user}
+      />
+        <RemoveCoinsModal
+        isOpen={removeCoinsModal?.isOpen}
+        setDisplaySearchData={setDisplaySearchData}
+        size={"sm"}
+        onClose={() => setRemoveCoinsModal({ isOpen: false, user: null })}
+        fetchData={fetchData}
+        selectedUser={removeCoinsModal?.user}
       />
       {/* Advance filter */}
       <Modal

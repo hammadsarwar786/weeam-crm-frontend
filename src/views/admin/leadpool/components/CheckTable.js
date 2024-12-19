@@ -43,21 +43,10 @@ import {
 } from "react-table";
 import * as XLSX from "xlsx";
 
-// Custom components
-import {
-  DeleteIcon,
-  EditIcon,
-  EmailIcon,
-  PhoneIcon,
-  SearchIcon,
-  ViewIcon,
-} from "@chakra-ui/icons";
 import Card from "components/card/Card";
-import CountUpComponent from "components/countUpComponent/countUpComponent";
 import Pagination from "components/pagination/Pagination";
 import Spinner from "components/spinner/Spinner";
-import { FaCheck, FaHistory, FaSort, FaSortDown, FaSortUp } from "react-icons/fa";
-import { Link, useNavigate } from "react-router-dom";
+import { FaCheck, FaSort, FaSortDown, FaSortUp } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { getApi } from "services/api";
 import Delete from "../Delete";
@@ -65,19 +54,13 @@ import AddEmailHistory from "views/admin/emailHistory/components/AddEmail";
 import AddPhoneCall from "views/admin/phoneCall/components/AddPhoneCall";
 import Add from "../Add";
 import { AddIcon } from "@chakra-ui/icons";
-import { CiMenuKebab } from "react-icons/ci";
 import Edit from "../Edit";
 import { useFormik } from "formik";
-import { BsColumnsGap, BsWhatsapp } from "react-icons/bs";
+import { BsColumnsGap } from "react-icons/bs";
 import * as yup from "yup";
 import ImportModal from "./ImportModal";
-import CustomSearchInput from "components/search/search";
 import DataNotFound from "components/notFoundData";
-import RenderManager from "./RenderManager";
-import RenderAgent from "./RenderAgent";
 import RenderStatus from "./RenderStatus";
-import ApprovalStatus from "./ApprovalStatus";
-import { MdTask } from "react-icons/md";
 import AddTask from "./addTask";
 import { toast } from "react-toastify";
 import { putApi } from "services/api";
@@ -85,6 +68,7 @@ import { constant } from "constant";
 import AdvancedSearchModal from "./AdvancedSearchModal";
 import { getUserNameById } from "utils";
 import { IoMdClose } from "react-icons/io";
+import LeadsModal from "views/admin/lead/LeadsModal";
 export default function CheckTable(props) {
   const {
     tableData,
@@ -104,13 +88,17 @@ export default function CheckTable(props) {
     setAction,
     action,
     setIsLoding,
+    setTotalCoins,
+    fetchAdvancedSearch,
     dateTime,
+    displayAdvSearchData,
     setDateTime,
     pages,
     totalLeads,
     fetchSearchedData,
     setData,
-    checkApproval
+    checkApproval,
+    currentState,
   } = props;
   const textColor = useColorModeValue("gray.500", "white");
   const borderColor = useColorModeValue("gray.200", "whiteAlpha.100");
@@ -123,7 +111,7 @@ export default function CheckTable(props) {
 
   const user = JSON.parse(localStorage.getItem("user"));
   const tree = useSelector((state) => state.user.tree);
-  const users = useSelector(state=>state.user?.users);
+  const users = useSelector((state) => state.user?.users);
 
   const [deleteModel, setDelete] = useState(false);
   const [approvalStatus, setApprovalStatus] = useState(false);
@@ -132,8 +120,14 @@ export default function CheckTable(props) {
   const [advaceSearch, setAdvaceSearch] = useState(false);
   const [searchClear, setSearchClear] = useState(false);
   const [selectedId, setSelectedId] = useState();
+  const [buyLoading, setBuyLoading] = useState(false);
   const [callSelectedId, setCallSelectedId] = useState();
-  const navigate = useNavigate();
+  const [approveLoading, setApproveLoading] = useState(false);
+  const [rejectLoading, setRejectLoading] = useState(false);
+  const [leadsModal, setLeadsModal] = useState({
+    isOpen: false,
+    lid: null,
+  });
   let data = useMemo(() => tableData, [tableData]);
   const [selectAllChecked, setSelectAllChecked] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -151,12 +145,11 @@ export default function CheckTable(props) {
   const [manageColumns, setManageColumns] = useState(false);
   const [tempSelectedColumns, setTempSelectedColumns] = useState(dataColumn); // State to track changes
   const [taskInits, setTaskInits] = useState({});
-  const [userCoins,setUserCoins] = useState(0)
-  useEffect(()=>{
-    setTempSelectedColumns(dataColumn)
-  },[dataColumn])
-  console.log(dataColumn,"dataColumn")
- 
+  const [userCoins, setUserCoins] = useState(0);
+  useEffect(() => {
+    setTempSelectedColumns(dataColumn);
+  }, [dataColumn]);
+  console.log(dataColumn, "dataColumn");
 
   const csvColumns = [
     { Header: "Name", accessor: "leadName" },
@@ -187,6 +180,13 @@ export default function CheckTable(props) {
     }
   };
 
+  const handleLeadsModal = (lid) => {
+    setLeadsModal({
+      isOpen: true,
+      lid,
+    });
+  };
+
   const handleColumnClear = () => {
     isColumnSelected = selectedColumns?.some(
       (selectedColumn) => selectedColumn?.accessor === column?.accessor
@@ -194,16 +194,16 @@ export default function CheckTable(props) {
     setTempSelectedColumns(dynamicColumns);
     setManageColumns(!manageColumns ? !manageColumns : false);
   };
+  async function fetchCoins() {
+    const res = await getApi(`api/user/view/${user?._id}`);
 
-  useEffect(()=>{
-    async function fetchUser(){
+    setUserCoins(res?.data?.coins);
+    setTotalCoins(res?.data?.coins);
+  }
 
-      const res = await getApi(`api/user/view/${user?._id}`)
-
-      setUserCoins(res?.data?.coins)
-    }
-    fetchUser();
-  },[tableData])
+  useEffect(() => {
+    fetchCoins();
+  }, [tableData]);
 
   const initialValues = {
     leadName: "",
@@ -232,7 +232,7 @@ export default function CheckTable(props) {
     initialValues: initialValues,
     validationSchema: validationSchema,
     onSubmit: (values, { resetForm }) => {
-      console.log(values?.managerAssigned,"manager Assigned")
+      console.log(values?.managerAssigned, "manager Assigned");
       setIsLoding(true);
       const searchResult = allData?.filter(
         (item) =>
@@ -275,8 +275,8 @@ export default function CheckTable(props) {
           (user) => user?._id?.toString() === values?.agentAssigned
         );
       }
-      if(values?.agentAssigned == -1){
-        agent ={ firstName:"No",lastName:" Agent"}
+      if (values?.agentAssigned == -1) {
+        agent = { firstName: "No", lastName: " Agent" };
       }
 
       let manager = null;
@@ -285,9 +285,9 @@ export default function CheckTable(props) {
           (user) => user?._id?.toString() === values?.managerAssigned
         );
       }
-      if(values?.managerAssigned == -1){
-        alert("it is called in manager")
-        manager = {firstName:"No",lastNamt:"Manager"}
+      if (values?.managerAssigned == -1) {
+        alert("it is called in manager");
+        manager = { firstName: "No", lastNamt: "Manager" };
       }
       let getValue = [
         values.leadName,
@@ -322,7 +322,7 @@ export default function CheckTable(props) {
     setUpdatedPage(0);
     fetchData(1, pageSize);
     setGopageValue(1);
-    setUpdatedPage(0); 
+    setUpdatedPage(0);
   };
 
   const {
@@ -454,87 +454,102 @@ export default function CheckTable(props) {
     }
   };
 
-  const approveChangeHandler = async(e,leadId,agentId,managerId,approvalId) =>{
-    const user = JSON.parse(localStorage.getItem('user'))
-    console.log(user?.role,"role")
-    if(e == "none") return;
-    try{
-     const res = await axios.put(constant["baseUrl"]+"api/adminApproval/update",{
-      isApproved:e == "accept"?true:false,
-      objectId:approvalId,
-      // isManager:
-     },{
-      headers:{
-        Authorization:  (localStorage.getItem("token") || sessionStorage.getItem("token"))
-      }
-     })
+  const approveChangeHandler = async (
+    e,
+    coinsRequired,
+    leadId,
+    agentId,
+    managerId,
+    approvalId
+  ) => {
+    const user = JSON.parse(localStorage.getItem("user"));
 
-     if(res?.data?.status){
-      if(agentId?false:true){
-        try {
-          // setLoading(true);
-          const dataObj = {
-            managerAssigned:managerId ,
-          }; 
-    
-          if (e === "") {
-            dataObj["agentAssigned"] = "";
-          }
-    
-          await putApi(`api/lead/edit/${leadId}`, dataObj);
-          const r = await getApi(`api/user/view/${managerId}`)
-          const res = await putApi(`api/user/edit/${managerId}`,{
-            ...r?.data,coins:(allData?.find(lead=>lead?._id == leadId)?.leadStatus == "new")?r?.data?.coins-300:r?.data?.coins-150
-          })
-          fetchData();
-          toast.success("Manager updated successfuly");
-          // setManagerSelected(dataObj.managerAssigned || "");
-          // setData(prevData => {
-          //   const newData = [...prevData]; 
-    
-          //   const updateIdx = newData.findIndex((l) => l._id.toString() === leadID); 
-          //   if(updateIdx !== -1) {
-          //     newData[updateIdx].managerAssigned = dataObj.managerAssigned; 
-          //     newData[updateIdx].agentAssigned = ""; 
-          //   }
-          //   return newData; 
-          // })
-        } catch (error) {
-          console.log(error);
-          toast.error("Failed to update the manager");
+    if (e == "none") return;
+    try {
+      const res = await axios.put(
+        constant["baseUrl"] + "api/adminApproval/update",
+        {
+          isApproved: e == "accept" ? true : false,
+          objectId: approvalId,
+          userID: managerId || agentId,
+          leadId,
+          role: managerId ? "Manager" : "Agent",
+          coinsRequired,
+          // isManager:
+        },
+        {
+          headers: {
+            Authorization:
+              localStorage.getItem("token") || sessionStorage.getItem("token"),
+          },
         }
-      }else{
-        try {
-          const data = {
-            agentAssigned: agentId,
-          };
-    
-          // setLoading(true); 
-    
-          await putApi(`api/lead/edit/${leadId}`, data);
-          const r = await getApi(`api/user/view/${agentId}`)
-          const res = await putApi(`api/user/edit/${agentId}`,{
-            ...r?.data,coins:(allData?.find(lead=>lead?._id == leadId)?.leadStatus == "new")?r?.data?.coins-300:r?.data?.coins-150
-          })
-          toast.success("Agent updated successfuly");
-          fetchData();
-          
-          // fetchData();
-        } catch (error) {
-          console.log(error);
-          toast.error("Failed to update the agent");
-        }
-      }
-       
-    
-  
-     }
+      );
 
-     console.log(res,"response from update of lead request")
-    }catch(error){
-      console.log("error",error)
+      if (e === "accept") {
+        toast.success("Lead approved successfuly!");
+      } else if (e === "reject") {
+        toast.success("Lead rejected successfuly!");
+      }
+
+      fetchData();
+
+      // if (res?.data?.status) {
+      //   if (agentId ? false : true) {
+      //     try {
+      //       // setLoading(true);
+      //       const dataObj = {
+      //         managerAssigned: managerId,
+      //       };
+
+      //       if (e === "") {
+      //         dataObj["agentAssigned"] = "";
+      //       }
+
+      //       await putApi(`api/lead/edit/${leadId}`, dataObj);
+      //       fetchData();
+      //       toast.success("Manager updated successfuly");
+      //       // setManagerSelected(dataObj.managerAssigned || "");
+      //       // setData(prevData => {
+      //       //   const newData = [...prevData];
+
+      //       //   const updateIdx = newData.findIndex((l) => l._id.toString() === leadID);
+      //       //   if(updateIdx !== -1) {
+      //       //     newData[updateIdx].managerAssigned = dataObj.managerAssigned;
+      //       //     newData[updateIdx].agentAssigned = "";
+      //       //   }
+      //       //   return newData;
+      //       // })
+      //     } catch (error) {
+      //       console.log(error);
+      //       toast.error("Failed to update the manager");
+      //     }
+      //   } else {
+      //     try {
+      //       const data = {
+      //         agentAssigned: agentId,
+      //       };
+
+      //       // setLoading(true);
+
+      //       await putApi(`api/lead/edit/${leadId}`, data);
+      //       fetchData();
+
+      //       // fetchData();
+      //     } catch (error) {
+      //       console.log(error);
+      //       toast.error("Failed to update the agent");
+      //     }
+      //   }
+      // }
+
+      console.log(res, "response from update of lead request");
+    } catch (error) {
+      console.log("error", error);
     }
-  }
+
+    setApproveLoading(false);
+    setRejectLoading(false);
+  };
 
   const convertJsonToCsvOrExcel = (
     jsonArray,
@@ -557,28 +572,28 @@ export default function CheckTable(props) {
   };
 
   const fetchSearch = () => {
-    if(searchbox.current?.value?.trim()) {
-      fetchSearchedData(searchbox.current?.value?.trim(), 1, pageSize); 
-      setUpdatedPage(0); 
-      setGopageValue(1); 
+    if (searchbox.current?.value?.trim()) {
+      fetchSearchedData(searchbox.current?.value?.trim(), 1, pageSize);
+      setUpdatedPage(0);
+      setGopageValue(1);
     }
-  }
+  };
 
   useEffect(() => {
-    setGopageValue(1); 
-    setUpdatedPage(0); 
-    if(displaySearchData) {
-      fetchSearchedData(searchbox.current?.value?.trim()); 
+    setGopageValue(1);
+    setUpdatedPage(0);
+    if (displaySearchData) {
+      fetchSearchedData(searchbox.current?.value?.trim());
     } else {
-      fetchData(); 
+      fetchData();
     }
-
   }, [action]);
 
   useEffect(() => {
-    setGopageValue(1); 
-    setUpdatedPage(0); 
-    if (fetchData && (dateTime.from || dateTime.to) && !displaySearchData) fetchData();
+    setGopageValue(1);
+    setUpdatedPage(0);
+    if (fetchData && (dateTime.from || dateTime.to) && !displaySearchData)
+      fetchData();
   }, [dateTime]);
 
   useEffect(() => {
@@ -596,7 +611,7 @@ export default function CheckTable(props) {
 
   useEffect(() => {
     setUpdatedPage(0);
-    setGopageValue(1); 
+    setGopageValue(1);
     if (displaySearchData) {
       fetchSearchedData(searchbox.current?.value?.trim() || "", 1, pageSize);
     } else {
@@ -604,37 +619,59 @@ export default function CheckTable(props) {
     }
   }, [pageSize]);
 
-
-  const sendRequest = async (leadID) => {
-    const user = JSON.parse(localStorage.getItem('user'))
+  const sendRequest = async (leadID, coins) => {
+    const user = JSON.parse(localStorage.getItem("user"));
     // if(user._id == e.target.value){
-      // alert("The manager is wroking")
+    // alert("The manager is wroking")
     //  const res= await postApi("api/adminApproval/add", {leadId: leadID, managerId: e.target.value,},true);
     //    console.log(res.data)
-let  payload = {
-  leadId:leadID,
-}
 
-if(user?.roles[0]?.roleName =="Agent"){
-  payload.agentId = user?._id
-}else if(user?.roles[0]?.roleName =="Manager"){
-  payload.managerId = user?._id
-}
+    setBuyLoading(true);
+    let payload = {
+      leadId: leadID,
+      coinsRequired: coins,
+      role: user?.roles[0]?.roleName,
+    };
 
-
-    try{
-      const res = await axios.post(constant["baseUrl"]+"api/adminApproval/add",payload,{
-        headers:{
-          Authorization:  (localStorage.getItem("token") || sessionStorage.getItem("token"))
-        }
-      })
-      console.log(res.data)
-      fetchData()
-
-    }catch(error){
-      console.log(error,"error")
+    if (user?.roles[0]?.roleName == "Agent") {
+      payload.agentId = user?._id;
+    } else if (user?.roles[0]?.roleName == "Manager") {
+      payload.managerId = user?._id;
     }
-    // } 
+
+    try {
+      const res = await axios.post(
+        constant["baseUrl"] + "api/adminApproval/add",
+        payload,
+        {
+          headers: {
+            Authorization:
+              localStorage.getItem("token") || sessionStorage.getItem("token"),
+          },
+        }
+      );
+      console.log(res.data);
+      fetchData();
+
+      fetchCoins();
+      setBuyLoading(true);
+    } catch (error) {
+      console.log(error, "error");
+    }
+    // }
+  };
+
+  const refreshData = () => {
+    if (displaySearchData) {
+      fetchSearchedData(searchbox.current?.value?.trim() || "", 1, pageSize);
+    } else if (displayAdvSearchData) {
+      const data = Object.fromEntries(
+        Object.entries(values).filter(([key, value]) => value !== "")
+      );
+      fetchAdvancedSearch(data, pageIndex + 1, pageSize);
+    } else {
+      fetchData(pageIndex + 1, pageSize);
+    }
   };
 
   return (
@@ -704,22 +741,6 @@ if(user?.roles[0]?.roleName =="Agent"){
         overflowX={{ sm: "scroll", lg: "hidden" }}
       >
         <Grid templateColumns="repeat(12, 1fr)" gap={2}>
-            <GridItem             colSpan={{ base: 8 }}
-            display={"flex"}
-            alignItems={"center"}>
-              <Text
-                color={useColorModeValue("secondaryGray.900", "white")}
-                fontSize="22px"
-                fontWeight="700"
-              >
-                Leads (
-                <CountUpComponent
-                  key={data?.length}
-                  targetNumber={totalLeads}
-                />
-                )
-              </Text>
-            </GridItem>
           {/* <GridItem
             colSpan={{ base: 8 }}
             display={"flex"}
@@ -1021,6 +1042,41 @@ if(user?.roles[0]?.roleName =="Agent"){
                     }
                   });
 
+                  const coinsRequired = ["", "new"].includes(
+                    row.original?.leadStatus !== undefined
+                      ? row.original?.leadStatus
+                      : row?.original?.leadId?.leadStatus
+                  )
+                    ? 300
+                    : 50;
+
+                  const statuses = {
+                    active: "Interested",
+                    sold: "Sold",
+                    pending: "Not interested",
+                    new: "New",
+                    no_answer: "No Answer",
+                    reassigned: "Reassigned",
+                    unreachable: "Unreachable",
+                    waiting: "Waiting",
+                    follow_up: "Follow Up",
+                    meeting: "Meeting",
+                    follow_up_after_meeting: "Follow Up After Meeting",
+                    deal: "Deal",
+                    junk: "Junk",
+                    whatsapp_send: "Whatsapp Send",
+                    whatsapp_rec: "Whatsapp Rec",
+                    deal_out: "Deal Out",
+                    shift_project: "Shift Project",
+                    wrong_number: "Wrong Number",
+                    broker: "Broker",
+                    voice_mail: "Voice Mail",
+                    request: "Request",
+                    callback: "Callback",
+                    attended_the_show: "Attended the show",
+                    will_attend_the_show: "Will attend the show",
+                  };
+
                   return (
                     <Tr {...row?.getRowProps()} key={i} className="leadRow">
                       {row?.cells?.map((cell, index) => {
@@ -1050,9 +1106,15 @@ if(user?.roles[0]?.roleName =="Agent"){
                             </Flex>
                           );
                         } else if (cell?.column.Header === "Name") {
-                          data = (access?.view && row?.original?.ApprovalStatus == "Accepted") ? (
-                            <Link to={`/leadView/${row?.original?.leadId}`}>
+                          data =
+                            access?.view &&
+                            (user?.role === "superAdmin" ||
+                              (user?.roles[0]?.roleName === "Agent" &&
+                                currentState === "Accepted")) ? (
                               <Text
+                                onClick={() =>
+                                  handleLeadsModal(row.original?.leadId?._id)
+                                }
                                 me="10px"
                                 sx={{
                                   "&:hover": {
@@ -1062,24 +1124,24 @@ if(user?.roles[0]?.roleName =="Agent"){
                                 }}
                                 color="brand.600"
                                 fontSize="sm"
+                                cursor={"pointer"}
                                 // fontWeight="500"
                                 pl="24px"
                                 fontWeight="700"
                               >
                                 {cell?.value?.text || cell?.value}
                               </Text>
-                            </Link>
-                          ) : (
-                            <Text
-                              me="10px"
-                              fontSize="sm"
-                              // fontWeight="500"
-                              fontWeight="700"
-                              pl="19px"
-                            >
-                              {cell?.value?.text || cell?.value}
-                            </Text>
-                          );
+                            ) : (
+                              <Text
+                                me="10px"
+                                fontSize="sm"
+                                // fontWeight="500"
+                                fontWeight="700"
+                                pl="19px"
+                              >
+                                {cell?.value?.text || cell?.value}
+                              </Text>
+                            );
                         } else if (cell?.column.Header === "Whatsapp Number") {
                           data = (
                             <Text
@@ -1135,17 +1197,31 @@ if(user?.roles[0]?.roleName =="Agent"){
                             </Text>
                           );
                         } else if (cell?.column.Header === "Status") {
-                          data = (
-                            <div className="selectOpt">
-                              <RenderStatus
-                                setUpdatedStatuses={setUpdatedStatuses}
-                                id={cell?.row?.original?._id}
-                                cellValue={cell?.value}
-                              />
-                            </div>
-                          );
-                        } else if (cell?.column.Header === "Lead Approval"){
-                          data = (
+                          console.log("st:", cell?.value);
+                          data =
+                            currentState === "Accepted" ? (
+                              <div className="selectOpt">
+                                <RenderStatus
+                                  setUpdatedStatuses={setUpdatedStatuses}
+                                  id={cell?.row?.original?.leadId?._id}
+                                  cellValue={cell?.value}
+                                />
+                              </div>
+                            ) : (
+                              <div>
+                                {cell?.value === undefined
+                                  ? statuses[
+                                      row.original?.leadId?.leadStatus === ""
+                                        ? "new"
+                                        : row.original?.leadId?.leadStatus
+                                    ]
+                                  : statuses[
+                                      cell?.value === "" ? "new" : cell?.value
+                                    ]}
+                              </div>
+                            );
+                        } else if (cell?.column.Header === "Lead Approval") {
+                          data =
                             // <div className="selectOpt">
                             //   <ApprovalStatus
                             //     setUpdatedStatuses={setUpdatedStatuses}
@@ -1153,37 +1229,68 @@ if(user?.roles[0]?.roleName =="Agent"){
                             //     cellValue={cell?.value}
                             //   />
                             // </div>
-                            row?.original?.approvalStatus != "pending"?row?.original?.approvalStatus :
-                            <div style={{
-                              display:"flex",
-                              gap:"10px",
-                              paddingLeft:"19px"
-                            }}>
-                              <Button
-                              onClick={()=>approveChangeHandler("accept",row?.original?.leadId?.toString(),row?.original?.agentId,row?.original?.managerId,row?.original?._id)}
-                               sx={{
-                                padding:"5px",
-                                borderRadius:"50%",
-                                cursor:"pointer",
-                                "hover":{
-                                  backgroundColor:'blue',
-                                  color:"white"
-                                }
-
-                              }}><FaCheck size={18}/></Button>
-                              <Button 
-                              onClick={()=>approveChangeHandler("reject",row?.original?.leadId?.toString(),row?.original?.agentId,row?.original?.managerId,row?.original?._id)}
-                               sx={{
-                                padding:"5px",
-                                borderRadius:"50%",
-                                cursor:"pointer",
-                                "hover":{
-                                  backgroundColor:'red',
-                                  color:"white"
-                                }
-                                
-                              }}><IoMdClose size={18}/></Button>
-                            </div>
+                            row?.original?.approvalStatus != "pending" ? (
+                              row?.original?.approvalStatus
+                            ) : (
+                              <div
+                                style={{
+                                  display: "flex",
+                                  gap: "10px",
+                                  paddingLeft: "19px",
+                                }}
+                              >
+                                <Button
+                                  disabled={approveLoading || rejectLoading}
+                                  onClick={() => {
+                                    setApproveLoading(true);
+                                    approveChangeHandler(
+                                      "accept",
+                                      coinsRequired,
+                                      row?.original?.leadId?._id?.toString(),
+                                      row?.original?.agentId,
+                                      row?.original?.managerId,
+                                      row?.original?._id
+                                    );
+                                  }}
+                                  sx={{
+                                    padding: "5px",
+                                    borderRadius: "50%",
+                                    cursor: "pointer",
+                                    hover: {
+                                      backgroundColor: "blue",
+                                      color: "white",
+                                    },
+                                  }}
+                                >
+                                  <FaCheck size={18} />
+                                </Button>
+                                <Button
+                                  disabled={approveLoading || rejectLoading}
+                                  onClick={() => {
+                                    setRejectLoading(true);
+                                    approveChangeHandler(
+                                      "reject",
+                                      coinsRequired,
+                                      row?.original?.leadId?._id?.toString(),
+                                      row?.original?.agentId,
+                                      row?.original?.managerId,
+                                      row?.original?._id
+                                    );
+                                  }}
+                                  sx={{
+                                    padding: "5px",
+                                    borderRadius: "50%",
+                                    cursor: "pointer",
+                                    hover: {
+                                      backgroundColor: "red",
+                                      color: "white",
+                                    },
+                                  }}
+                                >
+                                  <IoMdClose size={18} />
+                                </Button>
+                              </div>
+                            );
                           //   <Select
                           //   defaultValue={"None"}
                           //   // className={changeStatus(value)}
@@ -1196,17 +1303,14 @@ if(user?.roles[0]?.roleName =="Agent"){
                           //   <option value="accept">Accept</option>
                           //   <option value="reject">Reject</option>
                           //         </Select>
-                          );
-                        }  else if(cell?.column.Header === "Approval Status"){
-                            data=(
-                              <h1 style={{textAlign:"center"}}>
-                                { 
-                                row?.original?.approvalStatus
-                            }
-                              </h1>
-                            )
-                        } else if (cell?.column.Header === "Manager") {
+                        } else if (cell?.column.Header === "Approval Status") {
                           data = (
+                            <h1 style={{ textAlign: "center" }}>
+                              {row?.original?.approvalStatus}
+                            </h1>
+                          );
+                        } else if (cell?.column.Header === "Manager") {
+                          data =
                             // <RenderManager
                             //   fetchData={fetchData}
                             //   pageIndex={pageIndex}
@@ -1215,15 +1319,18 @@ if(user?.roles[0]?.roleName =="Agent"){
                             //   value={cell?.value}
                             //   checkApproval={checkApproval}
                             // />
-                            getUserNameById(row?.original?.managerId,users)
-                          );
+                            getUserNameById(row?.original?.managerId, users);
                         } else if (cell?.column.Header === "Agent") {
-                          console.log(row?.original?.agentId,row?.original?.leadName,"agent assigned ")
-                          data = (
+                          console.log(
+                            row?.original?.agentId,
+                            row?.original?.leadName,
+                            "agent assigned "
+                          );
+                          data =
                             // <>
                             //   <RenderAgent
                             //   checkApproval={checkApproval}
-                                
+
                             //     setData={setData}
                             //     fetchData={fetchData}
                             //     leadID={row?.original?._id?.toString()}
@@ -1231,8 +1338,7 @@ if(user?.roles[0]?.roleName =="Agent"){
                             //     value={cell?.value}
                             //   />
                             // </>
-                            getUserNameById(row?.original?.agentId,users)
-                          );
+                            getUserNameById(row?.original?.agentId, users);
                         } else if (cell?.column.Header === "Nationality") {
                           data = (
                             <Text
@@ -1275,7 +1381,32 @@ if(user?.roles[0]?.roleName =="Agent"){
                               fontWeight="900"
                               textAlign={"center"}
                             >
-                              {new Date(cell?.value?.text || cell?.value).toLocaleString() || "-"}
+
+                              {cell?.value === undefined ? new Date(row.original?.createdAt || row.original?.createdAt?.text).toLocaleString() : new Date(
+                                cell?.value?.text || cell?.value
+                              ).toLocaleString()}
+                            </Text>
+                          );
+                        } else if (cell?.column.Header === "Lead Status") {
+                          data = (
+                            <Text
+                              fontSize={"sm"}
+                              fontWeight="900"
+                              textAlign={"center"}
+                            >
+                              {cell?.value === ""
+                                ? "New"
+                                : statuses[cell?.value]}
+                            </Text>
+                          );
+                        } else if (cell?.column.Header === "Interest") {
+                          data = (
+                            <Text
+                              fontSize={"sm"}
+                              fontWeight="900"
+                              textAlign={"center"}
+                            >
+                              {cell?.value || "-"}
                             </Text>
                           );
                         } else if (cell?.column.Header === "Action") {
@@ -1305,7 +1436,7 @@ if(user?.roles[0]?.roleName =="Agent"){
                             //           Edit
                             //         </MenuItem>
                             //       )}
-                                  
+
                             //       {access?.delete && (
                             //         <MenuItem
                             //           py={2.5}
@@ -1329,24 +1460,35 @@ if(user?.roles[0]?.roleName =="Agent"){
                               fontWeight="900"
                               textAlign={"center"}
                             >
-                            {(row?.original?.agentAssigned || row?.original?.managerAssigned) ?
-                            <Button
-                             colorScheme="red"
-                            // variant="filled"
-                            size="sm" disabled>
-                            Sold Out
-                            </Button>:
-                            <Button 
-                            colorScheme="brand"
-                            // variant="filled"
-                            size="sm"
-                            onClick={()=>sendRequest(row?.original?._id)}
-                            disabled={row?.original?.leadStatus == "new" || row?.original?.leadStatus == ""?userCoins<300:userCoins<150}
-                            >
-                            Buy
-                            </Button>}
-                           </Text>
-                           
+                              {row?.original?.agentAssigned ||
+                              row?.original?.managerAssigned ? (
+                                <Button
+                                  colorScheme="red"
+                                  // variant="filled"
+                                  size="sm"
+                                  disabled
+                                >
+                                  Sold Out
+                                </Button>
+                              ) : (
+                                <Button
+                                  colorScheme="brand"
+                                  // variant="filled"
+                                  size="sm"
+                                  onClick={() =>
+                                    sendRequest(
+                                      row?.original?._id,
+                                      coinsRequired
+                                    )
+                                  }
+                                  disabled={
+                                    buyLoading || userCoins < coinsRequired
+                                  }
+                                >
+                                  Buy - {coinsRequired} Coins
+                                </Button>
+                              )}
+                            </Text>
                           );
                         }
                         return (
@@ -1841,6 +1983,14 @@ if(user?.roles[0]?.roleName =="Agent"){
           </ModalFooter>
         </ModalContent>
       </Modal>
+
+      {leadsModal.isOpen && (
+        <LeadsModal
+          leadsModal={leadsModal}
+          onClose={() => setLeadsModal({ isOpen: false, lid: null })}
+          reFreshData={refreshData}
+        />
+      )}
       {/* Delete model */}
       <Delete
         isOpen={deleteModel}

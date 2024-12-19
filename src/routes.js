@@ -108,13 +108,13 @@ const routes = [
     icon: <Icon as={MdPeopleOutline} width='20px' height='20px' color='inherit' />,
     component: LeadPool,
   },
-  {
-    name: "Points",
-    layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
-    path: "/points",
-    icon: <Icon as={FaDollarSign } width='20px' height='20px' color='inherit' />,
-    component: CurrencyPoints,
-  },
+  // {
+  //   name: "Points",
+  //   layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
+  //   path: "/points",
+  //   icon: <Icon as={FaDollarSign } width='20px' height='20px' color='inherit' />,
+  //   component: CurrencyPoints,
+  // },
  
   {
     name: "Lead history",

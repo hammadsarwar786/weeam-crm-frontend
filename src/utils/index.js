@@ -137,11 +137,9 @@ export   const getUserNameById = (id,tree) =>{
 //           return manager?._id == id  ;  
 //   });
 
-const item = tree?.find(item=>item?._id == id);
-console.log(item,"find user")
-console.log(tree,"it is a user tree")
+const user = tree?.find(user=>user?._id == id);
 
-  return item?item?.firstName + " " + item?.lastName:""
+  return user?user?.firstName + " " + user?.lastName:""
 
   }
 //   export   const getAgentNameById = (id,tree) =>{

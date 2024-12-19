@@ -1,2 +1,2 @@
-# WMFRONT
-this is for the frontend development
+# WeeamCRM-FrontEnd
+WeeamCRM-FrontEnd

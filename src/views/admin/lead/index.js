@@ -19,7 +19,7 @@ const Index = () => {
   const [isLoding, setIsLoding] = useState(false);
   const [data, setData] = useState([]);
   const [displaySearchData, setDisplaySearchData] = useState(false);
-  const [displayAdvSearchData,setDisplayAdvSearchData] = useState(false)
+  const [displayAdvSearchData, setDisplayAdvSearchData] = useState(false)
   const [searchedData, setSearchedData] = useState([]);
   const user = JSON.parse(localStorage.getItem("user"));
   const [totalLeads, setTotalLeads] = useState(0);
@@ -88,7 +88,7 @@ const Index = () => {
     roleColumns[role] || tableColumns
   );
 
-  const hiddenFields = JSON.parse(localStorage.getItem("hiddenCols") || "[]"); 
+  const hiddenFields = JSON.parse(localStorage.getItem("hiddenCols") || "[]");
   const [selectedColumns, setSelectedColumns] = useState(
     roleColumns[role] || tableColumns.filter((c) => hiddenFields.includes(c.accessor) === false)
   );
@@ -109,29 +109,27 @@ const Index = () => {
     let result = await getApi(
       user.role === "superAdmin"
         ? "api/lead/" +
-              "?dateTime=" +
-              dateTime?.from +
-              "|" +
-              dateTime?.to +
-              "&page=" +
-              pageNo +
-              "&pageSize=" +
-              pageSize
-        : `api/lead/?user=${user._id}&role=${
-            user.roles[0]?.roleName
-          }&dateTime=${
-            dateTime?.from + "|" + dateTime?.to
-          }&page=${pageNo}&pageSize=${pageSize}`
+        "?dateTime=" +
+        dateTime?.from +
+        "|" +
+        dateTime?.to +
+        "&page=" +
+        pageNo +
+        "&pageSize=" +
+        pageSize
+        : `api/lead/?user=${user._id}&role=${user.roles[0]?.roleName
+        }&dateTime=${dateTime?.from + "|" + dateTime?.to
+        }&page=${pageNo}&pageSize=${pageSize}`
     );
-   const newData =  result.data?.result?.map((lead)=>{
-       if(lead?.ip){
+    const newData = result.data?.result?.map((lead) => {
+      if (lead?.ip) {
         const parts = lead?.ip.split('-');
-         
-    // Return only the IP part, which is the first element of the array
-      lead.ip = parts?.length>1?parts[1]:parts[0];
-      
-       }
-       return {...lead}
+
+        // Return only the IP part, which is the first element of the array
+        lead.ip = parts?.length > 1 ? parts[1] : parts[0];
+
+      }
+      return { ...lead }
     })
     setData(newData || []);
     setPages(result.data?.totalPages || 0);
@@ -144,33 +142,31 @@ const Index = () => {
     let result = await getApi(
       user.role === "superAdmin"
         ? "api/lead/search" +
-            "?term=" +
-            term +
-            "&dateTime=" +
-            dateTime?.from +
-            "|" +
-            dateTime?.to +
-            "&page=" +
-            pageNo +
-            "&pageSize=" +
-            pageSize
-        : `api/lead/search?term=${term}&user=${user._id}&role=${
-            user.roles[0]?.roleName
-          }&dateTime=${
-            dateTime?.from + "|" + dateTime?.to
-          }&page=${pageNo}&pageSize=${pageSize}`
+        "?term=" +
+        term +
+        "&dateTime=" +
+        dateTime?.from +
+        "|" +
+        dateTime?.to +
+        "&page=" +
+        pageNo +
+        "&pageSize=" +
+        pageSize
+        : `api/lead/search?term=${term}&user=${user._id}&role=${user.roles[0]?.roleName
+        }&dateTime=${dateTime?.from + "|" + dateTime?.to
+        }&page=${pageNo}&pageSize=${pageSize}`
     );
     setDisplaySearchData(true);
-    const newData =  result.data?.result?.map((lead)=>{
-      if(lead?.ip){
-       const parts = lead?.ip.split('-');
-        
-   // Return only the IP part, which is the first element of the array
-     lead.ip = parts?.length>0?parts[1]:parts[0];
-      }
-     return {...lead}
+    const newData = result.data?.result?.map((lead) => {
+      if (lead?.ip) {
+        const parts = lead?.ip.split('-');
 
-   })
+        // Return only the IP part, which is the first element of the array
+        lead.ip = parts?.length > 0 ? parts[1] : parts[0];
+      }
+      return { ...lead }
+
+    })
     setSearchedData(newData || []);
     setPages(result.data?.totalPages || 0);
     setTotalLeads(result.data?.totalLeads || 0);
@@ -178,38 +174,45 @@ const Index = () => {
   };
 
   const fetchAdvancedSearch = async (data = {}, pageNo = 1, pageSize = 200) => {
+    console.log("before search:", data);
     setIsLoding(true);
+    // let result = await getApi(
+    //   user.role === "superAdmin"
+    //     ? "api/lead/advanced-search" +
+    //     "?data=" +
+    //     JSON.stringify(data) +
+    //     "&dateTime=" +
+    //     dateTime?.from +
+    //     "|" +
+    //     dateTime?.to +
+    //     "&page=" +
+    //     pageNo +
+    //     "&pageSize=" +
+    //     pageSize
+    //     : `api/lead/advanced-search?data=${JSON.stringify(data)}&user=${user._id
+    //     }&role=${user.roles[0]?.roleName}&dateTime=${dateTime?.from + "|" + dateTime?.to
+    //     }&page=${pageNo}&pageSize=${pageSize}`
+    // );
+    // Encode the data string to ensure special characters like "+" are preserved
+    let encodedData = encodeURIComponent(JSON.stringify(data));
+
     let result = await getApi(
       user.role === "superAdmin"
-        ? "api/lead/advanced-search" +
-            "?data=" +
-            JSON.stringify(data) +
-            "&dateTime=" +
-            dateTime?.from +
-            "|" +
-            dateTime?.to +
-            "&page=" +
-            pageNo +
-            "&pageSize=" +
-            pageSize
-        : `api/lead/advanced-search?data=${JSON.stringify(data)}&user=${
-            user._id
-          }&role=${user.roles[0]?.roleName}&dateTime=${
-            dateTime?.from + "|" + dateTime?.to
-          }&page=${pageNo}&pageSize=${pageSize}`
+        ? `api/lead/advanced-search?data=${encodedData}&dateTime=${dateTime?.from}|${dateTime?.to}&page=${pageNo}&pageSize=${pageSize}`
+        : `api/lead/advanced-search?data=${encodedData}&user=${user._id}&role=${user.roles[0]?.roleName}&dateTime=${dateTime?.from}|${dateTime?.to}&page=${pageNo}&pageSize=${pageSize}`
     );
     setDisplayAdvSearchData(true);
     setIsLoding(false);
-    const newData =  result.data?.result?.map((lead)=>{
-      if(lead?.ip){
-       const parts = lead?.ip.split('-');
-        
-   // Return only the IP part, which is the first element of the array
-     lead.ip = parts?.length>0?parts[1]:parts[0];
-      }
-     return {...lead}
+    const newData = result.data?.result?.map((lead) => {
+      if (lead?.ip) {
+        const parts = lead?.ip.split('-');
 
-   })
+        // Return only the IP part, which is the first element of the array
+        lead.ip = parts?.length > 0 ? parts[1] : parts[0];
+      }
+      return { ...lead }
+
+    })
     setSearchedData(newData || []);
     setPages(result.data?.totalPages || 0);
     setTotalLeads(result.data?.totalLeads || 0);

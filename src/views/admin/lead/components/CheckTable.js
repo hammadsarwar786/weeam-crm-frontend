@@ -136,7 +136,7 @@ export default function CheckTable(props) {
   const [addEmailHistory, setAddEmailHistory] = useState(false);
   const [addPhoneCall, setAddPhoneCall] = useState(false);
   const [advaceSearch, setAdvaceSearch] = useState(false);
-  const { isOpen:isSearchOpen, onOpen:onSearchOpen, onClose:onSearchClose } = useDisclosure();
+  const { isOpen: isSearchOpen, onOpen: onSearchOpen, onClose: onSearchClose } = useDisclosure();
   const [searchClear, setSearchClear] = useState(false);
   const [selectedId, setSelectedId] = useState();
   const [callSelectedId, setCallSelectedId] = useState();
@@ -195,18 +195,18 @@ export default function CheckTable(props) {
     setTempSelectedColumns(dynamicColumns);
     setManageColumns(!manageColumns ? !manageColumns : false);
   };
-  
 
-  const refreshData =()=>{
-    if(displaySearchData){
+
+  const refreshData = () => {
+    if (displaySearchData) {
       fetchSearchedData(searchbox.current?.value?.trim() || "", 1, pageSize);
-    }else if(displayAdvSearchData){
+    } else if (displayAdvSearchData) {
       const data = Object.fromEntries(
         Object.entries(values).filter(([key, value]) => value !== "")
       );
-      fetchAdvancedSearch(data, pageIndex+1, pageSize);
-    }else {
-      fetchData(pageIndex+1,pageSize);
+      fetchAdvancedSearch(data, pageIndex + 1, pageSize);
+    } else {
+      fetchData(pageIndex + 1, pageSize);
     }
   }
 
@@ -238,6 +238,7 @@ export default function CheckTable(props) {
     validationSchema: validationSchema,
     onSubmit: (values, { resetForm }) => {
       setIsLoding(true);
+      console.log("data", values);
 
       const data = Object.fromEntries(
         Object.entries(values).filter(([key, value]) => value !== "")
@@ -245,9 +246,15 @@ export default function CheckTable(props) {
       Object.keys(data).forEach(key => {
         if (typeof data[key] === 'string') {
           data[key] = data[key].trim();
-          if (key === 'leadPhoneNumber') {
-            data[key] = Number(data[key]);
-          }
+          // if (key === 'leadPhoneNumber') {
+          //   // Check if the number contains a '+', if not, convert it
+          //   if (data[key] && !data[key].startsWith('+')) {
+          //     data[key] = `+${data[key]}`;
+          //   } else {
+          //     // Keep it as a string to prevent the loss of '+'
+          //     data[key] = data[key].toString();
+          //   }
+          // }
         }
       });
 
@@ -265,12 +272,12 @@ export default function CheckTable(props) {
       //     (user) => user?._id?.toString() === values?.agentAssigned
       //   );
       // }
-      if(values?.agentAssigned){
+      if (values?.agentAssigned) {
         const agentsArray = Object.values(tree.agents).flatMap(managerArray => managerArray);
-       agent = agentsArray.find(agent=>agent?._id?.toString() === values?.agentAssigned)
+        agent = agentsArray.find(agent => agent?._id?.toString() === values?.agentAssigned)
       }
-      if(values?.agentAssigned == -1){
-        agent ={ firstName:"No",lastName:" Agent"}
+      if (values?.agentAssigned == -1) {
+        agent = { firstName: "No", lastName: " Agent" }
       }
       let manager = null;
       if (values?.managerAssigned) {
@@ -278,16 +285,16 @@ export default function CheckTable(props) {
           (user) => user?._id?.toString() === values?.managerAssigned
         );
       }
-      if(values?.managerAssigned == -1){
-        manager = {firstName:"No",lastName:"Manager"}
+      if (values?.managerAssigned == -1) {
+        manager = { firstName: "No", lastName: "Manager" }
       }
       let getValue = [
         values.leadName,
         values.leadStatus === "active"
           ? "interested"
           : values.leadStatus === "pending"
-          ? "not-interested"
-          : values.leadStatus,
+            ? "not-interested"
+            : values.leadStatus,
         values?.leadEmail,
         (manager && manager?.firstName + " " + manager?.lastName) || "",
         (agent && agent?.firstName + " " + agent?.lastName) || "",
@@ -295,7 +302,7 @@ export default function CheckTable(props) {
         values?.leadOwner,
         (![null, undefined, ""].includes(values?.fromLeadScore) &&
           `${values.fromLeadScore}-${values.toLeadScore}`) ||
-          undefined,
+        undefined,
       ].filter((value) => value);
       setGetTagValues(getValue);
       setAdvaceSearch(false);
@@ -494,7 +501,7 @@ export default function CheckTable(props) {
     setUpdatedPage(0);
     if (displaySearchData) {
       fetchSearchedData(searchbox.current?.value?.trim());
-    } else if(displayAdvSearchData){
+    } else if (displayAdvSearchData) {
       fetchAdvancedSearch();
     } else {
       fetchData();
@@ -520,12 +527,12 @@ export default function CheckTable(props) {
         pageIndex + 1,
         pageSize
       );
-    }else if(displayAdvSearchData){
+    } else if (displayAdvSearchData) {
       const data = Object.fromEntries(
         Object.entries(values).filter(([key, value]) => value !== "")
       );
-      fetchAdvancedSearch(data,pageIndex+1,pageSize)
-     console.log(values,'values of the form ')
+      fetchAdvancedSearch(data, pageIndex + 1, pageSize)
+      console.log(values, 'values of the form ')
     } else {
       fetchData(pageIndex + 1, pageSize);
     }
@@ -536,11 +543,11 @@ export default function CheckTable(props) {
     setGopageValue(1);
     if (displaySearchData) {
       fetchSearchedData(searchbox.current?.value?.trim() || "", 1, pageSize);
-    } else if(displayAdvSearchData){
-    const data = Object.fromEntries(
+    } else if (displayAdvSearchData) {
+      const data = Object.fromEntries(
         Object.entries(values).filter(([key, value]) => value !== "")
       );
-      fetchAdvancedSearch(data,1,pageSize)
+      fetchAdvancedSearch(data, 1, pageSize)
     }
     else {
       fetchData(1, pageSize);
@@ -643,7 +650,7 @@ export default function CheckTable(props) {
               >
                 Advance Search
               </Button>
-              {(displaySearchData || displayAdvSearchData)? (
+              {(displaySearchData || displayAdvSearchData) ? (
                 <Button
                   variant="outline"
                   size="sm"
@@ -813,7 +820,7 @@ export default function CheckTable(props) {
                     <Th
                       {...column.getHeaderProps(
                         column.isSortable !== false &&
-                          column.getSortByToggleProps()
+                        column.getSortByToggleProps()
                       )}
                       pe="10px"
                       key={index}
@@ -1066,8 +1073,8 @@ export default function CheckTable(props) {
                                 cell?.value < 40
                                   ? "red.600"
                                   : cell?.value < 80
-                                  ? "yellow.400"
-                                  : "green.600"
+                                    ? "yellow.400"
+                                    : "green.600"
                               }
                               fontSize="md"
                               fontWeight="900"
@@ -1083,8 +1090,8 @@ export default function CheckTable(props) {
                                 cell?.value < 40
                                   ? "red.600"
                                   : cell?.value < 80
-                                  ? "yellow.400"
-                                  : "green.600"
+                                    ? "yellow.400"
+                                    : "green.600"
                               }
                               fontSize="md"
                               fontWeight="900"
@@ -1316,8 +1323,8 @@ export default function CheckTable(props) {
                               cell?.column?.Header === "Manager"
                                 ? { padding: "0 5px 0 0" }
                                 : cell?.column?.Header === "Agent"
-                                ? { padding: 0 }
-                                : {}
+                                  ? { padding: 0 }
+                                  : {}
                             }
                             fontSize={{ sm: "14px" }}
                             minW={{ sm: "150px", md: "200px", lg: "auto" }}
@@ -1330,7 +1337,7 @@ export default function CheckTable(props) {
                     </Tr>
                   );
                 })
-                
+
               )}
             </Tbody>
           </Table>
@@ -1363,7 +1370,7 @@ export default function CheckTable(props) {
 
         <AddTask
           leadData={taskInits}
-          fetchData={() => {}}
+          fetchData={() => { }}
           isOpen={isTaskOpen}
           onClose={onTaskClose}
         />
