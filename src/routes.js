@@ -1,4 +1,3 @@
-
 import { Icon } from "@chakra-ui/react";
 import { HiUsers } from "react-icons/hi";
 import {
@@ -12,7 +11,16 @@ import {
 // icon
 import React from "react";
 import { AiFillFolderOpen, AiOutlineMail } from "react-icons/ai";
-import { FaCalendarAlt, FaFile, FaHistory, FaRupeeSign, FaTasks, FaWpforms, FaUserCircle,FaDollarSign  } from "react-icons/fa";
+import {
+  FaCalendarAlt,
+  FaFile,
+  FaHistory,
+  FaRupeeSign,
+  FaTasks,
+  FaWpforms,
+  FaUserCircle,
+  FaDollarSign,
+} from "react-icons/fa";
 import { LuBuilding2 } from "react-icons/lu";
 import { PiPhoneCallBold } from "react-icons/pi";
 import { FaCreativeCommonsBy } from "react-icons/fa";
@@ -27,31 +35,38 @@ import TableField from "views/admin/tableField";
 const MainDashboard = React.lazy(() => import("views/admin/default"));
 
 // My component
-const Contact = React.lazy(() => import('views/admin/contact'));
-const ContactView = React.lazy(() => import('views/admin/contact/View'));
-const ContactImport = React.lazy(() => import("views/admin/contact/components/ContactImport"));
+const Contact = React.lazy(() => import("views/admin/contact"));
+const ContactView = React.lazy(() => import("views/admin/contact/View"));
+const ContactImport = React.lazy(() =>
+  import("views/admin/contact/components/ContactImport")
+);
 
 const User = React.lazy(() => import("views/admin/users"));
 const UserView = React.lazy(() => import("views/admin/users/View"));
 
 const Property = React.lazy(() => import("views/admin/property"));
 const PropertyView = React.lazy(() => import("views/admin/property/View"));
-const PropertyImport = React.lazy(() => import("views/admin/property/components/PropertyImport"))
+const PropertyImport = React.lazy(() =>
+  import("views/admin/property/components/PropertyImport")
+);
 
 const Lead = React.lazy(() => import("views/admin/lead"));
 const CallHistory = React.lazy(() => import("views/admin/callHistory"));
 const LeadCycle = React.lazy(() => import("views/admin/leadCycle"));
 const LeadView = React.lazy(() => import("views/admin/lead/View"));
-const LeadImport = React.lazy(() => import("views/admin/lead/components/LeadImport"));
+const LeadImport = React.lazy(() =>
+  import("views/admin/lead/components/LeadImport")
+);
 const InvoiceView = React.lazy(() => import("views/admin/invoice"));
 const SingleInvoice = React.lazy(() => import("views/admin/invoice/View"));
-
 
 const Task = React.lazy(() => import("views/admin/task"));
 const Developers = React.lazy(() => import("views/admin/developers"));
 const BankAccounts = React.lazy(() => import("views/admin/bankAccounts"));
-const DailyReport = React.lazy(() => import("views/admin/dailyReport"));  
-const TaskView = React.lazy(() => import("views/admin/task/components/taskView"));
+const DailyReport = React.lazy(() => import("views/admin/dailyReport"));
+const TaskView = React.lazy(() =>
+  import("views/admin/task/components/taskView")
+);
 const Calender = React.lazy(() => import("views/admin/calender"));
 const Payments = React.lazy(() => import("views/admin/payments"));
 const Role = React.lazy(() => import("views/admin/role"));
@@ -59,7 +74,9 @@ const Role = React.lazy(() => import("views/admin/role"));
 const Document = React.lazy(() => import("views/admin/document"));
 
 const EmailHistory = React.lazy(() => import("views/admin/emailHistory"));
-const EmailHistoryView = React.lazy(() => import("views/admin/emailHistory/View"));
+const EmailHistoryView = React.lazy(() =>
+  import("views/admin/emailHistory/View")
+);
 
 const Meeting = React.lazy(() => import("views/admin/meeting"));
 const MettingView = React.lazy(() => import("views/admin/meeting/View"));
@@ -70,7 +87,7 @@ const PhoneCallView = React.lazy(() => import("views/admin/phoneCall/View"));
 const Report = React.lazy(() => import("views/admin/reports"));
 // Auth Imports
 const SignInCentered = React.lazy(() => import("views/auth/signIn"));
-// admin setting 
+// admin setting
 const AdminSetting = React.lazy(() => import("views/admin/adminSetting"));
 const LeadPool = React.lazy(() => import("views/admin/leadpool"));
 const HRModule = React.lazy(() => import("views/admin/hrModule"));
@@ -82,7 +99,7 @@ const routes = [
     name: "Dashboard",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/default",
-    icon: <Icon as={MdHome} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
     component: MainDashboard,
   },
   // ========================== Admin Layout ==========================
@@ -91,49 +108,53 @@ const routes = [
     name: "Lead",
     layout: [ROLE_PATH.superAdmin],
     path: "/lead",
-    icon: <Icon as={MdLeaderboard} width='20px' height='20px' color='inherit' />,
+    icon: (
+      <Icon as={MdLeaderboard} width="20px" height="20px" color="inherit" />
+    ),
     component: Lead,
   },
   {
     name: "HR Module",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/hrmodule",
-    icon: <Icon as={FaUserCircle} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={FaUserCircle} width="20px" height="20px" color="inherit" />,
     component: HRModule,
   },
   {
     name: "Leads Pool",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/pool",
-    icon: <Icon as={MdPeopleOutline} width='20px' height='20px' color='inherit' />,
+    icon: (
+      <Icon as={MdPeopleOutline} width="20px" height="20px" color="inherit" />
+    ),
     component: LeadPool,
   },
-  // {
-  //   name: "Points",
-  //   layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
-  //   path: "/points",
-  //   icon: <Icon as={FaDollarSign } width='20px' height='20px' color='inherit' />,
-  //   component: CurrencyPoints,
-  // },
- 
+  {
+    name: "Points",
+    layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
+    path: "/points",
+    icon: <Icon as={FaDollarSign} width="20px" height="20px" color="inherit" />,
+    component: CurrencyPoints,
+  },
+
   {
     name: "Lead history",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/leadHistory/:lid",
-    icon: <Icon as={FaHistory} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={FaHistory} width="20px" height="20px" color="inherit" />,
     component: CallHistory,
     under: "lead",
     parentName: "Lead",
   },
-  {
-    name: "Lead Cycle",
-    layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
-    path: "/leadCycle/:lid",
-    icon: <Icon as={FaHistory} width='20px' height='20px' color='inherit' />,
-    component: LeadCycle,
-    under: "lead",
-    parentName: "Lead",
-  },
+  // {
+  //   name: "Lead Cycle",
+  //   layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
+  //   path: "/leadCycle/:lid",
+  //   icon: <Icon as={FaHistory} width='20px' height='20px' color='inherit' />,
+  //   component: LeadCycle,
+  //   under: "lead",
+  //   parentName: "Lead",
+  // },
   {
     name: "Lead",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
@@ -155,7 +176,7 @@ const routes = [
     name: "Contacts",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/contacts",
-    icon: <Icon as={MdContacts} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={MdContacts} width="20px" height="20px" color="inherit" />,
     component: Contact,
   },
   {
@@ -181,7 +202,7 @@ const routes = [
     name: "Property",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/properties",
-    icon: <Icon as={LuBuilding2} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={LuBuilding2} width="20px" height="20px" color="inherit" />,
     component: Property,
   },
   {
@@ -204,14 +225,14 @@ const routes = [
   {
     name: "Invoice",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
-    icon: <Icon as={FaFile} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={FaFile} width="20px" height="20px" color="inherit" />,
     path: "/invoice",
     component: InvoiceView,
   },
   {
     name: "Invoice",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
-    under: 'invoice',
+    under: "invoice",
     path: "/invoiceView/:id",
     component: SingleInvoice,
   },
@@ -239,7 +260,7 @@ const routes = [
     name: "Task",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/task",
-    icon: <Icon as={FaTasks} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={FaTasks} width="20px" height="20px" color="inherit" />,
     component: Task,
   },
   {
@@ -255,7 +276,7 @@ const routes = [
     name: "Meeting",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/metting",
-    icon: <Icon as={SiGooglemeet} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={SiGooglemeet} width="20px" height="20px" color="inherit" />,
     component: Meeting,
   },
   {
@@ -271,11 +292,12 @@ const routes = [
     name: "Call",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/phone-call",
-    icon: <Icon as={PiPhoneCallBold} width='20px' height='20px' color='inherit' />,
+    icon: (
+      <Icon as={PiPhoneCallBold} width="20px" height="20px" color="inherit" />
+    ),
     component: PhoneCall,
   },
 
- 
   {
     name: "Call ",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
@@ -290,7 +312,9 @@ const routes = [
     name: "Email",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/email",
-    icon: <Icon as={AiOutlineMail} width='20px' height='20px' color='inherit' />,
+    icon: (
+      <Icon as={AiOutlineMail} width="20px" height="20px" color="inherit" />
+    ),
     component: EmailHistory,
   },
   {
@@ -306,7 +330,9 @@ const routes = [
     name: "Calender",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/calender",
-    icon: <Icon as={FaCalendarAlt} width='20px' height='20px' color='inherit' />,
+    icon: (
+      <Icon as={FaCalendarAlt} width="20px" height="20px" color="inherit" />
+    ),
     component: Calender,
   },
   // ------------- Payments Routes ------------------------
@@ -314,7 +340,7 @@ const routes = [
     name: "Payments",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/payments",
-    icon: <Icon as={FaRupeeSign} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={FaRupeeSign} width="20px" height="20px" color="inherit" />,
     component: Payments,
   },
 
@@ -324,7 +350,14 @@ const routes = [
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/role",
     under: "role",
-    icon: <Icon as={FaCreativeCommonsBy} width='20px' height='20px' color='inherit' />,
+    icon: (
+      <Icon
+        as={FaCreativeCommonsBy}
+        width="20px"
+        height="20px"
+        color="inherit"
+      />
+    ),
     component: Role,
   },
   {
@@ -332,7 +365,7 @@ const routes = [
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/custom-Fields",
     under: "customField",
-    icon: <Icon as={FaWpforms} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={FaWpforms} width="20px" height="20px" color="inherit" />,
     component: CustomField,
   },
   {
@@ -340,7 +373,14 @@ const routes = [
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/change-images",
     under: "image",
-    icon: <Icon as={FaCreativeCommonsBy} width='20px' height='20px' color='inherit' />,
+    icon: (
+      <Icon
+        as={FaCreativeCommonsBy}
+        width="20px"
+        height="20px"
+        color="inherit"
+      />
+    ),
     component: ChangeImage,
   },
   {
@@ -348,7 +388,14 @@ const routes = [
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/validations",
     under: "Validation",
-    icon: <Icon as={FaCreativeCommonsBy} width='20px' height='20px' color='inherit' />,
+    icon: (
+      <Icon
+        as={FaCreativeCommonsBy}
+        width="20px"
+        height="20px"
+        color="inherit"
+      />
+    ),
     component: Validation,
   },
   {
@@ -356,7 +403,7 @@ const routes = [
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/table-field",
     under: "tableField",
-    icon: <Icon as={FaWpforms} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={FaWpforms} width="20px" height="20px" color="inherit" />,
     component: TableField,
   },
   // // ------------- Text message Routes ------------------------
@@ -381,29 +428,38 @@ const routes = [
     name: "Documents",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/documents",
-    icon: <Icon as={AiFillFolderOpen} width='20px' height='20px' color='inherit' />,
+    icon: (
+      <Icon as={AiFillFolderOpen} width="20px" height="20px" color="inherit" />
+    ),
     component: Document,
   },
   // ----------------- Reporting Layout -----------------
-   {
-      name: "Daily Report",
-      layout: [ROLE_PATH.user, ROLE_PATH.superAdmin],
-      path: "/daily-report",
-      icon: (
-        <Icon
-          as={MdInsertChartOutlined}
-          width="20px"
-          height="20px"
-          color="inherit"
-        />
-      ),
-      component: DailyReport,
+  {
+    name: "Daily Report",
+    layout: [ROLE_PATH.user, ROLE_PATH.superAdmin],
+    path: "/daily-report",
+    icon: (
+      <Icon
+        as={MdInsertChartOutlined}
+        width="20px"
+        height="20px"
+        color="inherit"
+      />
+    ),
+    component: DailyReport,
   },
   {
     name: "Reporting and Analytics",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/reporting-analytics",
-    icon: <Icon as={MdInsertChartOutlined} width='20px' height='20px' color='inherit' />,
+    icon: (
+      <Icon
+        as={MdInsertChartOutlined}
+        width="20px"
+        height="20px"
+        color="inherit"
+      />
+    ),
     component: Report,
   },
 
@@ -413,7 +469,7 @@ const routes = [
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/user",
     under: "user",
-    icon: <Icon as={HiUsers} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={HiUsers} width="20px" height="20px" color="inherit" />,
     component: User,
   },
   {
@@ -424,7 +480,7 @@ const routes = [
     path: "/userView/:id",
     component: UserView,
   },
-    {
+  {
     name: "Developers",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/developers",
@@ -432,7 +488,7 @@ const routes = [
     component: Developers,
   },
 
-   {
+  {
     name: "Bank Accounts",
     layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
     path: "/bank-accounts",
@@ -446,7 +502,7 @@ const routes = [
     name: "Sign In",
     layout: "/auth",
     path: "/sign-in",
-    icon: <Icon as={MdLock} width='20px' height='20px' color='inherit' />,
+    icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
     component: SignInCentered,
   },
 ];

@@ -20,10 +20,11 @@ const LeadNotes = ({ lid, noteAdded }) => {
       const leadNotes = await getApi("api/leadnote/" + lid);
 
       // Filter the notes to only include those added by the current user
-      const filteredNotes = (leadNotes.data || []).filter(note => note.addedBy?._id === user?._id);
+      // const filteredNotes = (leadNotes.data || []).filter(note => note.addedBy?._id === user?._id || user?.role == "superAdmin");
       
       // Set the filtered notes to state
-      setAllNotes(filteredNotes);
+      // setAllNotes(filteredNotes);
+       setAllNotes(leadNotes.data || []);
       setNotesLoading(false);
     } catch (err) {
       console.log(err);

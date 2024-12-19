@@ -1,10 +1,10 @@
-import { Box, CircularProgress, Select, useColorModeValue } from "@chakra-ui/react";
+import { Box, CircularProgress, Select, Text, useColorModeValue } from "@chakra-ui/react";
 import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { toast } from "react-toastify";
 import { putApi } from "services/api";
 
-const RenderManager = ({ value, leadID, fetchData, pageIndex, displaySearchData, setSearchedData, setData }) => {
+const RenderManager = ({ isAdmin,value, leadID, fetchData, pageIndex, displaySearchData, setSearchedData, setData }) => {
   const [ManagerSelected, setManagerSelected] = useState("");
   const tree = useSelector((state) => state.user.tree);
   const [loading, setLoading] = useState(false);
@@ -68,6 +68,7 @@ const RenderManager = ({ value, leadID, fetchData, pageIndex, displaySearchData,
       <CircularProgress size={4} isIndeterminate />
     </Box>
   ) : (
+    isAdmin?
     <Select
       style={{
         color: !ManagerSelected ? "grey" : textColor,
@@ -85,7 +86,9 @@ const RenderManager = ({ value, leadID, fetchData, pageIndex, displaySearchData,
             {manager?.firstName + " " + manager?.lastName}
           </option>
         ))}
-    </Select>
+    </Select>:ManagerSelected && <Text>{tree?.managers?.find(manager=>manager?._id == ManagerSelected)?.firstName + " " + tree?.managers?.find(manager=>manager?._id == ManagerSelected)?.lastName}</Text>
+    
+  
   );
 };
 

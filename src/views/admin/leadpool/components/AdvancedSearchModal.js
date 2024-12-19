@@ -17,6 +17,7 @@ const {
   ModalFooter,
   Button,
   Spinner,
+  Checkbox,
 } = require("@chakra-ui/react");
 
 const AdvancedSearchModal = ({
@@ -124,9 +125,6 @@ const AdvancedSearchModal = ({
                 <option value="broker">Broker</option>
                 <option value="voice_mail">Voice Mail</option>
                 <option value="request">Request</option>
-                   <option value="will_attend_the_show">Will attend the show</option>
-                <option value="attended_the_show">Attended the show</option>
-                <option value="callback">Callback</option>
               </Select>
               <Text mb="10px" color={"red"}>
                 {" "}
@@ -188,6 +186,12 @@ const AdvancedSearchModal = ({
                   errors.leadPhoneNumber}
               </Text>
             </GridItem>
+            {/* <GridItem colSpan={{ base: 12, md: 6 }}> */}
+             
+            
+   
+              
+            {/* </GridItem> */}
 
             {user?.role === "superAdmin" && (
               <GridItem colSpan={{ base: 12, md: 6 }}>

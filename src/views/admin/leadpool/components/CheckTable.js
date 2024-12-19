@@ -43,10 +43,29 @@ import {
 } from "react-table";
 import * as XLSX from "xlsx";
 
+// Custom components
+import {
+  DeleteIcon,
+  EditIcon,
+  EmailIcon,
+  PhoneIcon,
+  SearchIcon,
+  ViewIcon,
+} from "@chakra-ui/icons";
 import Card from "components/card/Card";
+import CountUpComponent from "components/countUpComponent/countUpComponent";
 import Pagination from "components/pagination/Pagination";
 import Spinner from "components/spinner/Spinner";
-import { FaCheck, FaSort, FaSortDown, FaSortUp } from "react-icons/fa";
+import LeadsModal from "../../lead/LeadsModal";
+
+import {
+  FaCheck,
+  FaHistory,
+  FaSort,
+  FaSortDown,
+  FaSortUp,
+} from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { getApi } from "services/api";
 import Delete from "../Delete";
@@ -54,13 +73,19 @@ import AddEmailHistory from "views/admin/emailHistory/components/AddEmail";
 import AddPhoneCall from "views/admin/phoneCall/components/AddPhoneCall";
 import Add from "../Add";
 import { AddIcon } from "@chakra-ui/icons";
+import { CiMenuKebab } from "react-icons/ci";
 import Edit from "../Edit";
 import { useFormik } from "formik";
-import { BsColumnsGap } from "react-icons/bs";
+import { BsColumnsGap, BsWhatsapp } from "react-icons/bs";
 import * as yup from "yup";
 import ImportModal from "./ImportModal";
+import CustomSearchInput from "components/search/search";
 import DataNotFound from "components/notFoundData";
+import RenderManager from "./RenderManager";
+import RenderAgent from "./RenderAgent";
 import RenderStatus from "./RenderStatus";
+import ApprovalStatus from "./ApprovalStatus";
+import { MdTask } from "react-icons/md";
 import AddTask from "./addTask";
 import { toast } from "react-toastify";
 import { putApi } from "services/api";
@@ -68,7 +93,10 @@ import { constant } from "constant";
 import AdvancedSearchModal from "./AdvancedSearchModal";
 import { getUserNameById } from "utils";
 import { IoMdClose } from "react-icons/io";
-import LeadsModal from "views/admin/lead/LeadsModal";
+import { deleteApi } from "services/api";
+import LastNoteText from "views/admin/lead/components/LastNoteText";
+import { useStateContext } from "contexts/store";
+
 export default function CheckTable(props) {
   const {
     tableData,
@@ -86,18 +114,18 @@ export default function CheckTable(props) {
     callAccess,
     emailAccess,
     setAction,
+    setDisplayAdvSearchData,
     action,
     setIsLoding,
-    setTotalCoins,
-    fetchAdvancedSearch,
     dateTime,
-    displayAdvSearchData,
     setDateTime,
     pages,
     totalLeads,
     fetchSearchedData,
     setData,
     checkApproval,
+    displayAdvSearchData,
+    fetchAdvancedSearch,
     currentState,
   } = props;
   const textColor = useColorModeValue("gray.500", "white");
@@ -120,14 +148,8 @@ export default function CheckTable(props) {
   const [advaceSearch, setAdvaceSearch] = useState(false);
   const [searchClear, setSearchClear] = useState(false);
   const [selectedId, setSelectedId] = useState();
-  const [buyLoading, setBuyLoading] = useState(false);
   const [callSelectedId, setCallSelectedId] = useState();
-  const [approveLoading, setApproveLoading] = useState(false);
-  const [rejectLoading, setRejectLoading] = useState(false);
-  const [leadsModal, setLeadsModal] = useState({
-    isOpen: false,
-    lid: null,
-  });
+  const navigate = useNavigate();
   let data = useMemo(() => tableData, [tableData]);
   const [selectAllChecked, setSelectAllChecked] = useState(false);
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -146,10 +168,15 @@ export default function CheckTable(props) {
   const [tempSelectedColumns, setTempSelectedColumns] = useState(dataColumn); // State to track changes
   const [taskInits, setTaskInits] = useState({});
   const [userCoins, setUserCoins] = useState(0);
+  const [leadsModal, setLeadsModal] = useState({
+    isOpen: false,
+    lid: null,
+  });
   useEffect(() => {
     setTempSelectedColumns(dataColumn);
   }, [dataColumn]);
   console.log(dataColumn, "dataColumn");
+  const { isLeadCycle, setIsLeadCycle } = useStateContext();
 
   const csvColumns = [
     { Header: "Name", accessor: "leadName" },
@@ -180,12 +207,39 @@ export default function CheckTable(props) {
     }
   };
 
-  const handleLeadsModal = (lid) => {
-    setLeadsModal({
-      isOpen: true,
-      lid,
-    });
-  };
+  async function requestDeleteHandler(id, leadID, userId) {
+    console.log(id, leadID, userId, "details");
+    try {
+      const res = await axios.post(
+        constant["baseUrl"] + "api/adminApproval/delete",
+        {
+          id: id,
+        },
+        {
+          headers: {
+            Authorization:
+              localStorage.getItem("token") || sessionStorage.getItem("token"),
+          },
+        }
+      );
+      const lead = await getApi(`api/lead/view/${leadID}`);
+
+      const r = await getApi(`api/user/view/${userId}`);
+      const response = await putApi(`api/user/edit/${userId}`, {
+        // ...r?.data,
+        coins:
+          lead?.data?.lead?.leadStatus == "new"
+            ? r?.data?.coins + 300
+            : r?.data?.coins + 50,
+      });
+
+      fetchData();
+      toast.success("Request is deleted successfuly");
+    } catch (error) {
+      console.log("an error occured");
+      toast.success("Unable to delete request");
+    }
+  }
 
   const handleColumnClear = () => {
     isColumnSelected = selectedColumns?.some(
@@ -194,15 +248,14 @@ export default function CheckTable(props) {
     setTempSelectedColumns(dynamicColumns);
     setManageColumns(!manageColumns ? !manageColumns : false);
   };
-  async function fetchCoins() {
-    const res = await getApi(`api/user/view/${user?._id}`);
-
-    setUserCoins(res?.data?.coins);
-    setTotalCoins(res?.data?.coins);
-  }
 
   useEffect(() => {
-    fetchCoins();
+    async function fetchUser() {
+      const res = await getApi(`api/user/view/${user?._id}`);
+
+      setUserCoins(res?.data?.coins);
+    }
+    fetchUser();
   }, [tableData]);
 
   const initialValues = {
@@ -231,54 +284,129 @@ export default function CheckTable(props) {
   const formik = useFormik({
     initialValues: initialValues,
     validationSchema: validationSchema,
+    // onSubmit: (values, { resetForm }) => {
+    //   console.log(values?.managerAssigned, "manager Assigned");
+    //   setIsLoding(true);
+    //   const searchResult = allData?.filter(
+    //     (item) =>
+    //       (!values?.leadName ||
+    //         (item?.leadName &&
+    //           item?.leadName
+    //             ?.toLowerCase()
+    //             ?.includes(values?.leadName?.toLowerCase()))) &&
+    //       (!values?.leadStatus ||
+    //         (values?.leadStatus === "new"
+    //           ? item?.leadStatus === "" || item?.leadStatus === "new"
+    //           : item?.leadStatus
+    //               ?.toLowerCase()
+    //               ?.includes(values?.leadStatus?.toLowerCase()))) &&
+    //       (!values?.leadEmail ||
+    //         (item?.leadEmail &&
+    //           item?.leadEmail
+    //             ?.toLowerCase()
+    //             ?.includes(values?.leadEmail?.toLowerCase()))) &&
+    //       (!values?.agentAssigned ||
+    //         (item?.agentAssigned &&
+    //           item?.agentAssigned === values?.agentAssigned)) &&
+    //       (!values?.managerAssigned ||
+    //         (item?.managerAssigned &&
+    //           item?.managerAssigned === values?.managerAssigned)) &&
+    //       (!values?.leadPhoneNumber ||
+    //         (item?.leadPhoneNumber &&
+    //           item?.leadPhoneNumber
+    //             ?.toString()
+    //             ?.includes(values?.leadPhoneNumber)))
+    //   );
+
+    //   let agent = null;
+    //   if (values?.agentAssigned && user?.roles[0]?.roleName === "Manager") {
+    //     agent = tree["agents"]["manager-" + user?._id?.toString()]?.find(
+    //       (user) => user?._id?.toString() === values?.agentAssigned
+    //     );
+    //   } else if (values?.agentAssigned && values?.managerAssigned) {
+    //     agent = tree["agents"]["manager-" + values.managerAssigned]?.find(
+    //       (user) => user?._id?.toString() === values?.agentAssigned
+    //     );
+    //   }
+    //   if (values?.agentAssigned == -1) {
+    //     agent = { firstName: "No", lastName: " Agent" };
+    //   }
+
+    //   let manager = null;
+    //   if (values?.managerAssigned) {
+    //     manager = tree["managers"]?.find(
+    //       (user) => user?._id?.toString() === values?.managerAssigned
+    //     );
+    //   }
+    //   if (values?.managerAssigned == -1) {
+    //     alert("it is called in manager");
+    //     manager = { firstName: "No", lastNamt: "Manager" };
+    //   }
+    //   let getValue = [
+    //     values.leadName,
+    //     values.leadStatus === "active"
+    //       ? "interested"
+    //       : values.leadStatus === "pending"
+    //       ? "not-interested"
+    //       : values.leadStatus,
+    //     values?.leadEmail,
+    //     (manager && manager?.firstName + " " + manager?.lastName) || "",
+    //     (agent && agent?.firstName + " " + agent?.lastName) || "",
+    //     values?.leadPhoneNumber,
+    //     values?.leadOwner,
+    //     (![null, undefined, ""].includes(values?.fromLeadScore) &&
+    //       `${values.fromLeadScore}-${values.toLeadScore}`) ||
+    //       undefined,
+    //   ].filter((value) => value);
+    //   setGetTagValues(getValue);
+    //   setUpdatedPage(0);
+    //   setSearchedData(searchResult);
+    //   setDisplaySearchData(true);
+    //   setAdvaceSearch(false);
+    //   setSearchClear(true);
+    //   setIsLoding(false);
+    //   resetForm();
+    // },
     onSubmit: (values, { resetForm }) => {
-      console.log(values?.managerAssigned, "manager Assigned");
       setIsLoding(true);
-      const searchResult = allData?.filter(
-        (item) =>
-          (!values?.leadName ||
-            (item?.leadName &&
-              item?.leadName
-                ?.toLowerCase()
-                ?.includes(values?.leadName?.toLowerCase()))) &&
-          (!values?.leadStatus ||
-            (values?.leadStatus === "new"
-              ? item?.leadStatus === "" || item?.leadStatus === "new"
-              : item?.leadStatus
-                  ?.toLowerCase()
-                  ?.includes(values?.leadStatus?.toLowerCase()))) &&
-          (!values?.leadEmail ||
-            (item?.leadEmail &&
-              item?.leadEmail
-                ?.toLowerCase()
-                ?.includes(values?.leadEmail?.toLowerCase()))) &&
-          (!values?.agentAssigned ||
-            (item?.agentAssigned &&
-              item?.agentAssigned === values?.agentAssigned)) &&
-          (!values?.managerAssigned ||
-            (item?.managerAssigned &&
-              item?.managerAssigned === values?.managerAssigned)) &&
-          (!values?.leadPhoneNumber ||
-            (item?.leadPhoneNumber &&
-              item?.leadPhoneNumber
-                ?.toString()
-                ?.includes(values?.leadPhoneNumber)))
+      console.log(values, "values in advance search");
+      const data = Object.fromEntries(
+        Object.entries(values).filter(([key, value]) => value !== "")
       );
+      Object.keys(data).forEach((key) => {
+        if (typeof data[key] === "string") {
+          data[key] = data[key].trim();
+          if (key === "leadPhoneNumber") {
+            data[key] = Number(data[key]);
+          }
+        }
+      });
+
+      fetchAdvancedSearch(data, 1, pageSize);
+      setUpdatedPage(0);
+      setGopageValue(1);
 
       let agent = null;
-      if (values?.agentAssigned && user?.roles[0]?.roleName === "Manager") {
-        agent = tree["agents"]["manager-" + user?._id?.toString()]?.find(
-          (user) => user?._id?.toString() === values?.agentAssigned
+      // if (values?.agentAssigned && user?.roles[0]?.roleName === "Manager") {
+      //   agent = tree["agents"]["manager-" + user?._id?.toString()]?.find(
+      //     (user) => user?._id?.toString() === values?.agentAssigned
+      //   );
+      // } else if (values?.agentAssigned && values?.managerAssigned) {
+      //   agent = tree["agents"]["manager-" + values.managerAssigned]?.find(
+      //     (user) => user?._id?.toString() === values?.agentAssigned
+      //   );
+      // }
+      if (values?.agentAssigned) {
+        const agentsArray = Object.values(tree.agents).flatMap(
+          (managerArray) => managerArray
         );
-      } else if (values?.agentAssigned && values?.managerAssigned) {
-        agent = tree["agents"]["manager-" + values.managerAssigned]?.find(
-          (user) => user?._id?.toString() === values?.agentAssigned
+        agent = agentsArray.find(
+          (agent) => agent?._id?.toString() === values?.agentAssigned
         );
       }
       if (values?.agentAssigned == -1) {
         agent = { firstName: "No", lastName: " Agent" };
       }
-
       let manager = null;
       if (values?.managerAssigned) {
         manager = tree["managers"]?.find(
@@ -286,8 +414,7 @@ export default function CheckTable(props) {
         );
       }
       if (values?.managerAssigned == -1) {
-        alert("it is called in manager");
-        manager = { firstName: "No", lastNamt: "Manager" };
+        manager = { firstName: "No", lastName: "Manager" };
       }
       let getValue = [
         values.leadName,
@@ -306,18 +433,16 @@ export default function CheckTable(props) {
           undefined,
       ].filter((value) => value);
       setGetTagValues(getValue);
-      setUpdatedPage(0);
-      setSearchedData(searchResult);
-      setDisplaySearchData(true);
       setAdvaceSearch(false);
       setSearchClear(true);
-      setIsLoding(false);
-      resetForm();
+      // resetForm();
     },
   });
   const handleClear = () => {
     searchbox.current.value = "";
     setDisplaySearchData(false);
+    setDisplayAdvSearchData(false);
+
     setSearchedData([]);
     setUpdatedPage(0);
     fetchData(1, pageSize);
@@ -336,6 +461,19 @@ export default function CheckTable(props) {
     resetForm,
     dirty,
   } = formik;
+
+  const refreshData = () => {
+    if (displaySearchData) {
+      fetchSearchedData(searchbox.current?.value?.trim() || "", 1, pageSize);
+    } else if (displayAdvSearchData) {
+      const data = Object.fromEntries(
+        Object.entries(values).filter(([key, value]) => value !== "")
+      );
+      fetchAdvancedSearch(data, pageIndex + 1, pageSize);
+    } else {
+      fetchData(pageIndex + 1, pageSize);
+    }
+  };
 
   const tableInstance = useTable(
     {
@@ -456,14 +594,14 @@ export default function CheckTable(props) {
 
   const approveChangeHandler = async (
     e,
-    coinsRequired,
     leadId,
     agentId,
     managerId,
     approvalId
   ) => {
     const user = JSON.parse(localStorage.getItem("user"));
-
+    console.log(user?.role, "role");
+    console.log(e, leadId, agentId, managerId, approvalId, "it an information");
     if (e == "none") return;
     try {
       const res = await axios.put(
@@ -471,10 +609,6 @@ export default function CheckTable(props) {
         {
           isApproved: e == "accept" ? true : false,
           objectId: approvalId,
-          userID: managerId || agentId,
-          leadId,
-          role: managerId ? "Manager" : "Agent",
-          coinsRequired,
           // isManager:
         },
         {
@@ -485,70 +619,107 @@ export default function CheckTable(props) {
         }
       );
 
-      if (e === "accept") {
-        toast.success("Lead approved successfuly!");
-      } else if (e === "reject") {
-        toast.success("Lead rejected successfuly!");
+      if (res?.data?.status) {
+        if (agentId ? false : true) {
+          try {
+            // setLoading(true);
+            const dataObj = {
+              managerAssigned: managerId,
+            };
+
+            if (e === "") {
+              dataObj["agentAssigned"] = "";
+            }
+
+            await putApi(`api/lead/edit/${leadId}`, dataObj);
+
+            fetchData();
+            toast.success("Manager updated successfuly");
+            // setManagerSelected(dataObj.managerAssigned || "");
+            // setData(prevData => {
+            //   const newData = [...prevData];
+
+            //   const updateIdx = newData.findIndex((l) => l._id.toString() === leadID);
+            //   if(updateIdx !== -1) {
+            //     newData[updateIdx].managerAssigned = dataObj.managerAssigned;
+            //     newData[updateIdx].agentAssigned = "";
+            //   }
+            //   return newData;
+            // })
+          } catch (error) {
+            console.log(error);
+            toast.error("Failed to update the manager");
+          }
+        } else {
+          try {
+            const data = {
+              agentAssigned: agentId,
+            };
+
+            // setLoading(true);
+
+            await putApi(`api/lead/edit/${leadId}`, data);
+            // if()
+            // const r = await getApi(`api/user/view/${agentId}`);
+            // const res = await putApi(`api/user/edit/${agentId}`, {
+            //   ...r?.data,
+            //   coins:
+            //     allData?.find((lead) => lead?._id == leadId)?.leadStatus ==
+            //     "new"
+            //       ? r?.data?.coins - 300
+            //       : r?.data?.coins - 150,
+            // });
+            toast.success("Agent updated successfuly");
+            fetchData();
+
+            // fetchData();
+          } catch (error) {
+            console.log(error);
+            toast.error("Failed to update the agent");
+          }
+        }
+      } else {
+        try {
+          if (agentId ? true : false) {
+            // alert(agentId);
+            const lead = await getApi(`api/lead/view/${leadId}`);
+            const r = await getApi(`api/user/view/${agentId}`);
+            const res = await putApi(`api/user/edit/${agentId}`, {
+              // ...r?.data,
+              coins:
+                lead?.data?.lead?.leadStatus == "new"
+                  ? r?.data?.coins + 300
+                  : r?.data?.coins + 50,
+            });
+          } else {
+            // alert(managerId);
+            const lead = await getApi(`api/lead/view/${leadId}`);
+            const r = await getApi(`api/user/view/${managerId}`);
+            const res = await putApi(`api/user/edit/${managerId}`, {
+              // ...r?.data,
+              coins:
+                lead?.data?.lead?.leadStatus == "new"
+                  ? r?.data?.coins + 300
+                  : r?.data?.coins + 50,
+            });
+          }
+          toast.success("Request Rejected successfuly");
+          fetchData();
+        } catch (error) {
+          console.log(error);
+        }
       }
-
-      fetchData();
-
-      // if (res?.data?.status) {
-      //   if (agentId ? false : true) {
-      //     try {
-      //       // setLoading(true);
-      //       const dataObj = {
-      //         managerAssigned: managerId,
-      //       };
-
-      //       if (e === "") {
-      //         dataObj["agentAssigned"] = "";
-      //       }
-
-      //       await putApi(`api/lead/edit/${leadId}`, dataObj);
-      //       fetchData();
-      //       toast.success("Manager updated successfuly");
-      //       // setManagerSelected(dataObj.managerAssigned || "");
-      //       // setData(prevData => {
-      //       //   const newData = [...prevData];
-
-      //       //   const updateIdx = newData.findIndex((l) => l._id.toString() === leadID);
-      //       //   if(updateIdx !== -1) {
-      //       //     newData[updateIdx].managerAssigned = dataObj.managerAssigned;
-      //       //     newData[updateIdx].agentAssigned = "";
-      //       //   }
-      //       //   return newData;
-      //       // })
-      //     } catch (error) {
-      //       console.log(error);
-      //       toast.error("Failed to update the manager");
-      //     }
-      //   } else {
-      //     try {
-      //       const data = {
-      //         agentAssigned: agentId,
-      //       };
-
-      //       // setLoading(true);
-
-      //       await putApi(`api/lead/edit/${leadId}`, data);
-      //       fetchData();
-
-      //       // fetchData();
-      //     } catch (error) {
-      //       console.log(error);
-      //       toast.error("Failed to update the agent");
-      //     }
-      //   }
-      // }
 
       console.log(res, "response from update of lead request");
     } catch (error) {
       console.log("error", error);
     }
-
-    setApproveLoading(false);
-    setRejectLoading(false);
+  };
+  const handleLeadsModal = (lid) => {
+    setLeadsModal({
+      isOpen: true,
+      lid,
+    });
   };
 
   const convertJsonToCsvOrExcel = (
@@ -619,18 +790,14 @@ export default function CheckTable(props) {
     }
   }, [pageSize]);
 
-  const sendRequest = async (leadID, coins) => {
+  const sendRequest = async (leadID) => {
     const user = JSON.parse(localStorage.getItem("user"));
     // if(user._id == e.target.value){
     // alert("The manager is wroking")
     //  const res= await postApi("api/adminApproval/add", {leadId: leadID, managerId: e.target.value,},true);
     //    console.log(res.data)
-
-    setBuyLoading(true);
     let payload = {
       leadId: leadID,
-      coinsRequired: coins,
-      role: user?.roles[0]?.roleName,
     };
 
     if (user?.roles[0]?.roleName == "Agent") {
@@ -651,27 +818,21 @@ export default function CheckTable(props) {
         }
       );
       console.log(res.data);
-      fetchData();
 
-      fetchCoins();
-      setBuyLoading(true);
+      const r = await getApi(`api/user/view/${user?._id}`);
+      const response = await putApi(`api/user/edit/${user?._id}`, {
+        // ...r?.data,
+        coins:
+          allData?.find((lead) => lead?._id == leadID)?.leadStatus == "new"
+            ? r?.data?.coins - 300
+            : r?.data?.coins - 50,
+      });
+
+      fetchData();
     } catch (error) {
       console.log(error, "error");
     }
     // }
-  };
-
-  const refreshData = () => {
-    if (displaySearchData) {
-      fetchSearchedData(searchbox.current?.value?.trim() || "", 1, pageSize);
-    } else if (displayAdvSearchData) {
-      const data = Object.fromEntries(
-        Object.entries(values).filter(([key, value]) => value !== "")
-      );
-      fetchAdvancedSearch(data, pageIndex + 1, pageSize);
-    } else {
-      fetchData(pageIndex + 1, pageSize);
-    }
   };
 
   return (
@@ -735,12 +896,101 @@ export default function CheckTable(props) {
           </Button>
         )}
       </Flex> */}
+      {user?.role !== "superAdmin" ? (
+        <div
+          style={{
+            display: "flex",
+            alignItems: "center",
+            gap: "10px",
+          }}
+        >
+          <div
+            style={{
+              fontSize: "22px",
+              color: "#F0A608",
+            }}
+          >
+            COINS
+          </div>
+          <div
+            style={{
+              fontSize: "22px",
+              color: "#F0A608",
+            }}
+          >
+            {userCoins}
+          </div>
+        </div>
+      ) : (
+        ""
+      )}
       <Card
         direction="column"
         w="100%"
         overflowX={{ sm: "scroll", lg: "hidden" }}
       >
         <Grid templateColumns="repeat(12, 1fr)" gap={2}>
+          <GridItem
+            colSpan={{ base: 8 }}
+            display={"flex"}
+            alignItems={"center"}
+          >
+            <Flex alignItems={"center"} flexWrap={"wrap"}>
+              <Text
+                color={useColorModeValue("secondaryGray.900", "white")}
+                fontSize="22px"
+                fontWeight="700"
+              >
+                Leads (
+                <CountUpComponent
+                  key={data?.length}
+                  targetNumber={totalLeads}
+                />
+                )
+              </Text>
+              <CustomSearchInput
+                searchbox={searchbox}
+                dataColumn={dataColumn}
+                isPaginated={true}
+                fetchSearch={fetchSearch}
+              />
+              <Button
+                variant="outline"
+                colorScheme="brand"
+                leftIcon={<SearchIcon />}
+                onClick={() => setAdvaceSearch(true)}
+                mt={{ sm: "5px", md: "0" }}
+                size="sm"
+              >
+                Advance Search
+              </Button>
+              {displaySearchData || displayAdvSearchData ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  colorScheme="red"
+                  ms={2}
+                  onClick={() => {
+                    handleClear();
+
+                    setGetTagValues([]);
+                  }}
+                >
+                  Clear
+                </Button>
+              ) : (
+                ""
+              )}
+              {selectedValues.length > 0 && access?.delete && (
+                <DeleteIcon
+                  cursor={"pointer"}
+                  onClick={() => setDelete(true)}
+                  color={"red"}
+                  ms={2}
+                />
+              )}
+            </Flex>
+          </GridItem>
           {/* <GridItem
             colSpan={{ base: 8 }}
             display={"flex"}
@@ -1042,41 +1292,6 @@ export default function CheckTable(props) {
                     }
                   });
 
-                  const coinsRequired = ["", "new"].includes(
-                    row.original?.leadStatus !== undefined
-                      ? row.original?.leadStatus
-                      : row?.original?.leadId?.leadStatus
-                  )
-                    ? 300
-                    : 50;
-
-                  const statuses = {
-                    active: "Interested",
-                    sold: "Sold",
-                    pending: "Not interested",
-                    new: "New",
-                    no_answer: "No Answer",
-                    reassigned: "Reassigned",
-                    unreachable: "Unreachable",
-                    waiting: "Waiting",
-                    follow_up: "Follow Up",
-                    meeting: "Meeting",
-                    follow_up_after_meeting: "Follow Up After Meeting",
-                    deal: "Deal",
-                    junk: "Junk",
-                    whatsapp_send: "Whatsapp Send",
-                    whatsapp_rec: "Whatsapp Rec",
-                    deal_out: "Deal Out",
-                    shift_project: "Shift Project",
-                    wrong_number: "Wrong Number",
-                    broker: "Broker",
-                    voice_mail: "Voice Mail",
-                    request: "Request",
-                    callback: "Callback",
-                    attended_the_show: "Attended the show",
-                    will_attend_the_show: "Will attend the show",
-                  };
-
                   return (
                     <Tr {...row?.getRowProps()} key={i} className="leadRow">
                       {row?.cells?.map((cell, index) => {
@@ -1108,12 +1323,31 @@ export default function CheckTable(props) {
                         } else if (cell?.column.Header === "Name") {
                           data =
                             access?.view &&
-                            (user?.role === "superAdmin" ||
-                              (user?.roles[0]?.roleName === "Agent" &&
-                                currentState === "Accepted")) ? (
+                            row?.original?.ApprovalStatus == "Accepted" ? (
+                              <Link to={`/leadView/${row?.original?.leadId}`}>
+                                <Text
+                                  me="10px"
+                                  sx={{
+                                    "&:hover": {
+                                      color: "blue.500",
+                                      textDecoration: "underline",
+                                    },
+                                  }}
+                                  color="brand.600"
+                                  fontSize="sm"
+                                  // fontWeight="500"
+                                  pl="24px"
+                                  fontWeight="700"
+                                >
+                                  {cell?.value?.text || cell?.value}
+                                </Text>
+                              </Link>
+                            ) : (
                               <Text
                                 onClick={() =>
-                                  handleLeadsModal(row.original?.leadId?._id)
+                                  handleLeadsModal(
+                                    row.original?.leadId || row.original?._id
+                                  )
                                 }
                                 me="10px"
                                 sx={{
@@ -1124,24 +1358,32 @@ export default function CheckTable(props) {
                                 }}
                                 color="brand.600"
                                 fontSize="sm"
-                                cursor={"pointer"}
                                 // fontWeight="500"
                                 pl="24px"
                                 fontWeight="700"
                               >
                                 {cell?.value?.text || cell?.value}
                               </Text>
-                            ) : (
-                              <Text
-                                me="10px"
-                                fontSize="sm"
-                                // fontWeight="500"
-                                fontWeight="700"
-                                pl="19px"
-                              >
-                                {cell?.value?.text || cell?.value}
-                              </Text>
                             );
+                        } else if (cell?.column.Header === "Manager") {
+                          data = (
+                            <RenderManager
+                              fetchData={fetchData}
+                              displaySearchData={
+                                displaySearchData || displayAdvSearchData
+                              }
+                              setSearchedData={setSearchedData}
+                              pageIndex={pageIndex}
+                              setData={setData}
+                              leadID={row?.original?._id?.toString()}
+                              value={cell?.value}
+                              isAdmin={user?.role === "superAdmin"}
+                            />
+                          );
+                        } else if (cell?.column.Header === "Country Source") {
+                          data = (
+                            <Text fontSize={"sm"}>{cell?.value || "-"}</Text>
+                          );
                         } else if (cell?.column.Header === "Whatsapp Number") {
                           data = (
                             <Text
@@ -1152,6 +1394,12 @@ export default function CheckTable(props) {
                             >
                               {cell?.value?.text || cell?.value || "-"}
                             </Text>
+                          );
+                        } else if (cell?.column.Header === "Last Note") {
+                          data = (
+                            <Box maxWidth={300}>
+                              <LastNoteText text={cell?.value} />
+                            </Box>
                           );
                         } else if (cell?.column.Header === "Phone Number") {
                           data = callAccess?.create ? (
@@ -1197,29 +1445,20 @@ export default function CheckTable(props) {
                             </Text>
                           );
                         } else if (cell?.column.Header === "Status") {
-                          console.log("st:", cell?.value);
-                          data =
-                            currentState === "Accepted" ? (
-                              <div className="selectOpt">
+                          data = (
+                            <div className="selectOpt">
+                              {user?.role === "superAdmin" ||
+                              currentState === "Accepted" ? (
                                 <RenderStatus
                                   setUpdatedStatuses={setUpdatedStatuses}
-                                  id={cell?.row?.original?.leadId?._id}
+                                  id={cell?.row?.original?._id}
                                   cellValue={cell?.value}
                                 />
-                              </div>
-                            ) : (
-                              <div>
-                                {cell?.value === undefined
-                                  ? statuses[
-                                      row.original?.leadId?.leadStatus === ""
-                                        ? "new"
-                                        : row.original?.leadId?.leadStatus
-                                    ]
-                                  : statuses[
-                                      cell?.value === "" ? "new" : cell?.value
-                                    ]}
-                              </div>
-                            );
+                              ) : (
+                                <Text>{cell?.value}</Text>
+                              )}
+                            </div>
+                          );
                         } else if (cell?.column.Header === "Lead Approval") {
                           data =
                             // <div className="selectOpt">
@@ -1240,18 +1479,15 @@ export default function CheckTable(props) {
                                 }}
                               >
                                 <Button
-                                  disabled={approveLoading || rejectLoading}
-                                  onClick={() => {
-                                    setApproveLoading(true);
+                                  onClick={() =>
                                     approveChangeHandler(
                                       "accept",
-                                      coinsRequired,
-                                      row?.original?.leadId?._id?.toString(),
+                                      row?.original?.leadId?.toString(),
                                       row?.original?.agentId,
                                       row?.original?.managerId,
                                       row?.original?._id
-                                    );
-                                  }}
+                                    )
+                                  }
                                   sx={{
                                     padding: "5px",
                                     borderRadius: "50%",
@@ -1265,16 +1501,17 @@ export default function CheckTable(props) {
                                   <FaCheck size={18} />
                                 </Button>
                                 <Button
-                                  disabled={approveLoading || rejectLoading}
                                   onClick={() => {
-                                    setRejectLoading(true);
                                     approveChangeHandler(
                                       "reject",
-                                      coinsRequired,
-                                      row?.original?.leadId?._id?.toString(),
+                                      row?.original?.leadId?.toString(),
                                       row?.original?.agentId,
                                       row?.original?.managerId,
                                       row?.original?._id
+                                    );
+                                    console.log(
+                                      row?.original,
+                                      "it is an object"
                                     );
                                   }}
                                   sx={{
@@ -1309,7 +1546,9 @@ export default function CheckTable(props) {
                               {row?.original?.approvalStatus}
                             </h1>
                           );
-                        } else if (cell?.column.Header === "Manager") {
+                        } else if (
+                          cell?.column.Header === "Requested By Manager"
+                        ) {
                           data =
                             // <RenderManager
                             //   fetchData={fetchData}
@@ -1320,7 +1559,9 @@ export default function CheckTable(props) {
                             //   checkApproval={checkApproval}
                             // />
                             getUserNameById(row?.original?.managerId, users);
-                        } else if (cell?.column.Header === "Agent") {
+                        } else if (
+                          cell?.column.Header === "Requested By Agent"
+                        ) {
                           console.log(
                             row?.original?.agentId,
                             row?.original?.leadName,
@@ -1381,80 +1622,13 @@ export default function CheckTable(props) {
                               fontWeight="900"
                               textAlign={"center"}
                             >
-
-                              {cell?.value === undefined ? new Date(row.original?.createdAt || row.original?.createdAt?.text).toLocaleString() : new Date(
+                              {new Date(
                                 cell?.value?.text || cell?.value
-                              ).toLocaleString()}
+                              ).toLocaleString() || "-"}
                             </Text>
                           );
-                        } else if (cell?.column.Header === "Lead Status") {
+                        } else if (cell?.column.Header === "Buy") {
                           data = (
-                            <Text
-                              fontSize={"sm"}
-                              fontWeight="900"
-                              textAlign={"center"}
-                            >
-                              {cell?.value === ""
-                                ? "New"
-                                : statuses[cell?.value]}
-                            </Text>
-                          );
-                        } else if (cell?.column.Header === "Interest") {
-                          data = (
-                            <Text
-                              fontSize={"sm"}
-                              fontWeight="900"
-                              textAlign={"center"}
-                            >
-                              {cell?.value || "-"}
-                            </Text>
-                          );
-                        } else if (cell?.column.Header === "Action") {
-                          data = (
-                            // <Text
-                            //   fontSize="md"
-                            //   fontWeight="900"
-                            //   textAlign={"center"}
-                            // >
-                            //   <Menu isLazy>
-                            //     <MenuButton>
-                            //       <CiMenuKebab />
-                            //     </MenuButton>
-                            //     <MenuList
-                            //       minW={"fit-content"}
-                            //       transform={"translate(1520px, 173px);"}
-                            //     >
-                            //       {access?.update && (
-                            //         <MenuItem
-                            //           py={2.5}
-                            //           onClick={() => {
-                            //             setEdit(true);
-                            //             setSelectedId(cell?.row?.original._id);
-                            //           }}
-                            //           icon={<EditIcon fontSize={15} mb={1} />}
-                            //         >
-                            //           Edit
-                            //         </MenuItem>
-                            //       )}
-
-                            //       {access?.delete && (
-                            //         <MenuItem
-                            //           py={2.5}
-                            //           color={"red"}
-                            //           onClick={() => {
-                            //             setSelectedValues([
-                            //               cell?.row?.original._id,
-                            //             ]);
-                            //             setDelete(true);
-                            //           }}
-                            //           icon={<DeleteIcon fontSize={15} mb={1} />}
-                            //         >
-                            //           Delete
-                            //         </MenuItem>
-                            //       )}
-                            //     </MenuList>
-                            //   </Menu>
-                            // </Text>
                             <Text
                               fontSize="md"
                               fontWeight="900"
@@ -1476,19 +1650,82 @@ export default function CheckTable(props) {
                                   // variant="filled"
                                   size="sm"
                                   onClick={() =>
-                                    sendRequest(
-                                      row?.original?._id,
-                                      coinsRequired
-                                    )
+                                    sendRequest(row?.original?._id)
                                   }
                                   disabled={
-                                    buyLoading || userCoins < coinsRequired
+                                    row?.original?.leadStatus == "new" ||
+                                    row?.original?.leadStatus == ""
+                                      ? userCoins < 300
+                                      : userCoins < 50
                                   }
                                 >
-                                  Buy - {coinsRequired} Coins
+                                  Buy -{" "}
+                                  {row?.original?.leadStatus == "new" ||
+                                  row?.original?.leadStatus == ""
+                                    ? 300
+                                    : 50}
                                 </Button>
                               )}
                             </Text>
+                          );
+                        } else if (cell?.column.Header === "Action") {
+                          data = (
+                            <Text
+                              fontSize="md"
+                              fontWeight="900"
+                              textAlign={"center"}
+                            >
+                              <Menu isLazy>
+                                <MenuButton>
+                                  <CiMenuKebab />
+                                </MenuButton>
+                                <MenuList
+                                  minW={"fit-content"}
+                                  transform={"translate(1520px, 173px);"}
+                                >
+                                  <MenuItem
+                                    py={2.5}
+                                    width={"max-content"}
+                                    onClick={() => {
+                                      // navigate(
+                                      //   "/leadCycle/" + row?.original?._id
+                                      // );
+                                      setIsLeadCycle({
+                                        isOpen: true,
+                                        id: row?.original?._id,
+                                      });
+                                    }}
+                                    icon={<FaHistory fontSize={15} mb={1} />}
+                                  >
+                                    View Lead cycle
+                                  </MenuItem>
+                                </MenuList>
+                              </Menu>
+                            </Text>
+                          );
+                        } else if (cell?.column.Header === "Cancel") {
+                          data = (
+                            <Button
+                              onClick={() =>
+                                requestDeleteHandler(
+                                  row?.original?._id,
+                                  row?.original?.leadId,
+                                  row?.original?.agentId ||
+                                    row?.original?.managerId
+                                )
+                              }
+                              sx={{
+                                padding: "5px",
+                                borderRadius: "50%",
+                                cursor: "pointer",
+                                hover: {
+                                  backgroundColor: "red",
+                                  color: "white",
+                                },
+                              }}
+                            >
+                              <IoMdClose size={18} />
+                            </Button>
                           );
                         }
                         return (
@@ -1500,7 +1737,7 @@ export default function CheckTable(props) {
                             {...cell?.getCellProps()}
                             key={index}
                             style={
-                              cell?.column?.Header === "Manager"
+                              cell?.column?.Header === "Requested By Manager"
                                 ? { padding: "0 5px 0 0" }
                                 : cell?.column?.Header === "Agent"
                                 ? { padding: 0 }
@@ -1702,7 +1939,7 @@ export default function CheckTable(props) {
                   {errors.leadStatus && touched.leadStatus && errors.leadStatus}
                 </Text>
               </GridItem>
-
+              {/* 
               <GridItem colSpan={{ base: 12, md: 6 }}>
                 <FormLabel
                   display="flex"
@@ -1728,8 +1965,8 @@ export default function CheckTable(props) {
                   {" "}
                   {errors.leadEmail && touched.leadEmail && errors.leadEmail}
                 </Text>
-              </GridItem>
-              <GridItem colSpan={{ base: 12, md: 6 }}>
+              </GridItem> */}
+              {/* <GridItem colSpan={{ base: 12, md: 6 }}>
                 <FormLabel
                   display="flex"
                   ms="4px"
@@ -1756,8 +1993,200 @@ export default function CheckTable(props) {
                     touched.leadPhoneNumber &&
                     errors.leadPhoneNumber}
                 </Text>
-              </GridItem>
+              </GridItem> */}
 
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Lead Address
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.leadAddress}
+                  name="leadAddress"
+                  placeholder="Search by Address"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.leadAddress &&
+                    touched.leadAddress &&
+                    errors.leadAddress}
+                </Text>
+              </GridItem>
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Nationality
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.nationality}
+                  name="nationality"
+                  placeholder="Search by Nationaity"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.nationality &&
+                    touched.nationality &&
+                    errors.nationality}
+                </Text>
+              </GridItem>
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Country Source
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.ip}
+                  name="ip"
+                  placeholder="Search by Country Source"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.ip && touched.ip && errors.ip}
+                </Text>
+              </GridItem>
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Lead Campaign
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.leadCampaign}
+                  name="leadCampaign"
+                  placeholder="Search by Lead Campaign"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.leadCampaign &&
+                    touched.leadCampaign &&
+                    errors.leadCampaign}
+                </Text>
+              </GridItem>
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Lead Medium
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.leadSource}
+                  name="nationality"
+                  placeholder="Search by Lead Source"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.leadSource && touched.leadSource && errors.leadSource}
+                </Text>
+              </GridItem>
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Time To Call
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.leadSource}
+                  name="timetocall"
+                  placeholder="Search by Timetocall"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.timetocall && touched.timetocall && errors.timetocall}
+                </Text>
+              </GridItem>
+              <GridItem colSpan={{ base: 12, md: 6 }}>
+                <FormLabel
+                  display="flex"
+                  ms="4px"
+                  fontSize="sm"
+                  fontWeight="600"
+                  color={"#000"}
+                  mb="0"
+                  mt={2}
+                >
+                  Are you in UAE
+                </FormLabel>
+                <Input
+                  fontSize="sm"
+                  onChange={handleChange}
+                  onBlur={handleBlur}
+                  value={values?.r_u_in_uae}
+                  name="r_u_in_uae"
+                  placeholder="Search by Are you in UAE"
+                  fontWeight="500"
+                />
+                <Text mb="10px" color={"red"}>
+                  {" "}
+                  {errors.r_u_in_uae && touched.r_u_in_uae && errors.r_u_in_uae}
+                </Text>
+              </GridItem>
+              {/* <Checkbox name="buyAble"  checked={values.buyAble}
+              onChange={handleChange} >
+    Buyable
+  </Checkbox> */}
               {user?.role === "superAdmin" && (
                 <GridItem colSpan={{ base: 12, md: 6 }}>
                   <FormLabel
@@ -1983,14 +2412,6 @@ export default function CheckTable(props) {
           </ModalFooter>
         </ModalContent>
       </Modal>
-
-      {leadsModal.isOpen && (
-        <LeadsModal
-          leadsModal={leadsModal}
-          onClose={() => setLeadsModal({ isOpen: false, lid: null })}
-          reFreshData={refreshData}
-        />
-      )}
       {/* Delete model */}
       <Delete
         isOpen={deleteModel}
@@ -2002,6 +2423,14 @@ export default function CheckTable(props) {
         setAction={setAction}
         setSelectAllChecked={setSelectAllChecked}
       />
+      {leadsModal.isOpen && (
+        <LeadsModal
+          leadsModal={leadsModal}
+          onClose={() => setLeadsModal({ isOpen: false, lid: null })}
+          reFreshData={refreshData}
+          isInLeadPool
+        />
+      )}
     </>
   );
 }

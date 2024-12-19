@@ -235,8 +235,10 @@ async function makeRequest(){
          })
 
          fetchData();
+         toast.success("Request is sucessfully sent to admin");
      }catch(error){
        console.log(error,"error")
+       toast.error("Request can not be sent");
      }
 }
   return (

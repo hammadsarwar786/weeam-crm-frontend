@@ -1,7 +1,7 @@
 import { Box, Modal, ModalContent, ModalOverlay, ModalCloseButton } from '@chakra-ui/react';
 import View from "./View"; 
 
-const LeadsModal = ({leadsModal, onClose,reFreshData}) => {
+const LeadsModal = ({leadsModal, onClose,reFreshData,isInLeadPool}) => {
 
     return (
         <div>
@@ -11,7 +11,7 @@ const LeadsModal = ({leadsModal, onClose,reFreshData}) => {
                                     <ModalCloseButton/>
 
                     <Box p={4} pt={16}>
-                        <View param={{id: leadsModal.lid}} reFreshData={reFreshData}/>
+                        <View isInLeadPool={isInLeadPool} param={{id: leadsModal.lid}} reFreshData={reFreshData}/>
                     </Box> 
                 </ModalContent>
             </Modal>

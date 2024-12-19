@@ -35,7 +35,7 @@ import { constant } from "constant";
 import moment from "moment/moment";
 import { useEffect, useState } from "react";
 import { IoIosArrowBack } from "react-icons/io";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useLocation } from "react-router-dom";
 import { toast } from "react-toastify";
 import { getApi, postApi } from "services/api";
 import ColumnsTable from "../contact/components/ColumnsTable";
@@ -54,9 +54,8 @@ import DataNotFound from "components/notFoundData";
 import LeadNotes from "./components/LeadNotes";
 import { FaPlus } from "react-icons/fa";
 import NewNoteModal from "./components/NewNoteModal";
-
-const View = ({param,reFreshData}) => {
-
+import { useSelector } from "react-redux";
+const View = ({ param, reFreshData, isInLeadPool }) => {
   const user = JSON.parse(localStorage.getItem("user"));
 
   const textColor = useColorModeValue("gray.500", "white");
@@ -73,12 +72,12 @@ const View = ({param,reFreshData}) => {
   const [showCall, setShowCall] = useState(false);
   const [showTasks, setShowTasks] = useState(false);
   const [showMeetings, setShowMeetings] = useState(false);
-  const [newNoteModal, setNewNoteModal] = useState(false); 
+  const [newNoteModal, setNewNoteModal] = useState(false);
   const [action, setAction] = useState(false);
   const [leadData, setLeadData] = useState([]);
   const [noteAdded, setNoteAdded] = useState(0);
   const size = "lg";
-
+  const { leadPoolState: currentState } = useSelector((state) => state?.user);
   const [addEmailHistory, setAddEmailHistory] = useState(false);
   const [addPhoneCall, setAddPhoneCall] = useState(false);
 
@@ -129,7 +128,7 @@ const View = ({param,reFreshData}) => {
   useEffect(() => {
     fetchData();
   }, [action]);
-  
+
   // }, [edit, addEmailHistory, addPhoneCall])
 
   function toCamelCase(text) {
@@ -144,7 +143,6 @@ const View = ({param,reFreshData}) => {
   useEffect(() => {
     if (fetchCustomData) fetchCustomData();
   }, [action]);
-
 
   return (
     <>
@@ -206,7 +204,9 @@ const View = ({param,reFreshData}) => {
                   }}
                 >
                   <Tab>Information</Tab>
-                  <Tab>Notes</Tab>
+                  {/* {(currentState === "Accepted" ||
+                    window?.location?.pathname === "/lead") && <Tab>Notes</Tab>} */}
+                    <Tab>Notes</Tab>
                   {/* <Tab> Communication</Tab>
                   <Tab>Document</Tab> */}
                 </TabList>
@@ -306,49 +306,53 @@ const View = ({param,reFreshData}) => {
                           </Text>
                           <Text>{data?.leadName ? data?.leadName : "N/A"}</Text>
                         </GridItem>
-                        <GridItem colSpan={{ base: 12, md: 6 }}>
-                          <Text
-                            color={"blackAlpha.900"}
-                            fontSize="sm"
-                            fontWeight="bold"
-                          >
-                            {" "}
-                            Lead Email
-                          </Text>
-                          <Text>
-                            {data?.leadEmail ? data?.leadEmail : "N/A"}
-                          </Text>
-                        </GridItem>
-                        <GridItem colSpan={{ base: 12, md: 6 }}>
-                          <Text
-                            color={"blackAlpha.900"}
-                            fontSize="sm"
-                            fontWeight="bold"
-                          >
-                            {" "}
-                            Lead Phone Number
-                          </Text>
-                          <Text>
-                            {data?.leadPhoneNumber
-                              ? data?.leadPhoneNumber
-                              : "N/A"}
-                          </Text>
-                        </GridItem>
-                        <GridItem colSpan={{ base: 12, md: 6 }}>
-                          <Text
-                            color={"blackAlpha.900"}
-                            fontSize="sm"
-                            fontWeight="bold"
-                          >
-                            {" "}
-                            Lead Whatsapp Number
-                          </Text>
-                          <Text>
-                            {data?.leadWhatsappNumber
-                              ? data?.leadWhatsappNumber
-                              : "N/A"}
-                          </Text>
-                        </GridItem>
+                        {!isInLeadPool && (
+                          <>
+                            <GridItem colSpan={{ base: 12, md: 6 }}>
+                              <Text
+                                color={"blackAlpha.900"}
+                                fontSize="sm"
+                                fontWeight="bold"
+                              >
+                                {" "}
+                                Lead Email
+                              </Text>
+                              <Text>
+                                {data?.leadEmail ? data?.leadEmail : "N/A"}
+                              </Text>
+                            </GridItem>
+                            <GridItem colSpan={{ base: 12, md: 6 }}>
+                              <Text
+                                color={"blackAlpha.900"}
+                                fontSize="sm"
+                                fontWeight="bold"
+                              >
+                                {" "}
+                                Lead Phone Number
+                              </Text>
+                              <Text>
+                                {data?.leadPhoneNumber
+                                  ? data?.leadPhoneNumber
+                                  : "N/A"}
+                              </Text>
+                            </GridItem>
+                            <GridItem colSpan={{ base: 12, md: 6 }}>
+                              <Text
+                                color={"blackAlpha.900"}
+                                fontSize="sm"
+                                fontWeight="bold"
+                              >
+                                {" "}
+                                Lead Whatsapp Number
+                              </Text>
+                              <Text>
+                                {data?.leadWhatsappNumber
+                                  ? data?.leadWhatsappNumber
+                                  : "N/A"}
+                              </Text>
+                            </GridItem>
+                          </>
+                        )}
                         <GridItem colSpan={{ base: 12, md: 6 }}>
                           <Text
                             color={"blackAlpha.900"}
@@ -510,8 +514,9 @@ const View = ({param,reFreshData}) => {
                           <Text>
                             {data?.leadSourceChannel
                               ? data?.leadSourceChannel
-                              :data?.leadSourceMedium
-                              ? data?.leadSourceMedium :"N/A"}
+                              : data?.leadSourceMedium
+                              ? data?.leadSourceMedium
+                              : "N/A"}
                           </Text>
                         </GridItem>
                         {/* <GridItem colSpan={{ base: 12, md: 6 }}>
@@ -663,7 +668,7 @@ const View = ({param,reFreshData}) => {
                               : "N/A"}
                           </Text>
                         </GridItem>
-                      
+
                         {/* <GridItem colSpan={{ base: 12 }}>
                           <Text
                             color={"blackAlpha.900"}
@@ -798,19 +803,32 @@ const View = ({param,reFreshData}) => {
                       <Heading flex={2} size="md">
                         Lead Notes/Comments
                       </Heading>
-                       
-                       <Flex flex={1} justifyContent={"flex-end"} alignItems={"center"}>
-                       
-                        <Button color="white" onClick={() => setNewNoteModal(true)} style={{
-                          padding: "0 20px", 
-                          color: "white",
-                        }} leftIcon={<FaPlus />} size="sm" variant="brand">
-                          Add New Note
-                        </Button>
+
+                      <Flex
+                        flex={1}
+                        justifyContent={"flex-end"}
+                        alignItems={"center"}
+                      >
+                        {(currentState === "Accepted" ||
+                          window?.location?.pathname === "/lead") && (
+                          <Button
+                            color="white"
+                            onClick={() => setNewNoteModal(true)}
+                            style={{
+                              padding: "0 20px",
+                              color: "white",
+                            }}
+                            leftIcon={<FaPlus />}
+                            size="sm"
+                            variant="brand"
+                          >
+                            Add New Note
+                          </Button>
+                        )}
                       </Flex>
                     </Flex>
                     <HSeparator />
-                     
+
                     <LeadNotes noteAdded={noteAdded} lid={param.id} />
                   </Card>
                 </GridItem>
@@ -1081,7 +1099,6 @@ const View = ({param,reFreshData}) => {
                   </Card>
                 </GridItem>
               </TabPanel>
-              
             </TabPanels>
           </Tabs>
           {(user.role === "superAdmin" ||
@@ -1090,7 +1107,7 @@ const View = ({param,reFreshData}) => {
             <Card mt={3}>
               <Grid templateColumns="repeat(6, 1fr)" gap={1}>
                 <GridItem colStart={6}>
-                  <Flex justifyContent={"right"}>
+                  {/* <Flex justifyContent={"right"}>
                     {user.role === "superAdmin" || permission?.update ? (
                       <Button
                         size="sm"
@@ -1118,22 +1135,20 @@ const View = ({param,reFreshData}) => {
                     ) : (
                       ""
                     )}
-                  </Flex>
+                  </Flex> */}
                 </GridItem>
               </Grid>
             </Card>
           )}
         </>
-
-        
       )}
 
-       <NewNoteModal
+      <NewNoteModal
         isOpen={newNoteModal}
         onClose={() => setNewNoteModal(false)}
         paramId={param.id}
         setNoteAdded={setNoteAdded}
-      reFreshData={reFreshData}
+        reFreshData={reFreshData}
       />
     </>
   );

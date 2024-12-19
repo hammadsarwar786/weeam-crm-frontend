@@ -37,6 +37,7 @@ const SignInCentered = React.lazy(() => import("views/auth/signIn"));
 const UserPage = React.lazy(() => import("views/admin/users"));
 const LeadPool = React.lazy(() => import("views/admin/leadpool"));
 const HRModule = React.lazy(() => import("views/admin/hrModule"));
+const Lead = React.lazy(()=> import("views/admin/lead"))
 const CurrencyPoints = React.lazy(() => import("views/admin/currencypoints"));
 // Custom Chakra theme
 export default function User(props) {
@@ -94,6 +95,13 @@ export default function User(props) {
       component: MainDashboard,
     },
     {
+      name: "Lead",
+      layout: [ROLE_PATH.user],
+      path: "/lead",
+      icon: <Icon as={MdHome} width="20px" height="20px" color="inherit" />,
+      component: Lead,
+    },
+    {
       name: "HR Module",
       layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
       path: "/hrmodule",
@@ -114,13 +122,13 @@ export default function User(props) {
       icon: <Icon as={MdLock} width="20px" height="20px" color="inherit" />,
       component: SignInCentered,
     },
-    // {
-    //   name: "Points",
-    //   layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
-    //   path: "/points",
-    //   icon: <Icon as={FaDollarSign } width='20px' height='20px' color='inherit' />,
-    //   component: CurrencyPoints,
-    // },
+    {
+      name: "Points",
+      layout: [ROLE_PATH.superAdmin, ROLE_PATH.user],
+      path: "/points",
+      icon: <Icon as={FaDollarSign } width='20px' height='20px' color='inherit' />,
+      component: CurrencyPoints,
+    },
   ];
 
   if (user?.roles[0]?.roleName === "Manager") {

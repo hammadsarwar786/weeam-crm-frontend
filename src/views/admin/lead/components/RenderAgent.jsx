@@ -27,10 +27,14 @@ const RenderAgent = ({
 
   useEffect(() => {
     if (tree && tree["managers"]) {
-      const agentsList = tree?.agents["manager-" + managerAssigned];
+      // const agentsList = tree?.agents["manager-" + managerAssigned];
+      // const agentsList = tree?.agents?.map(agent=>agent).flat()
+      const agentsList =  [].concat(...Object.values(tree?.agents));
+      console.log(agentsList,"agentList")
       setAgents(agentsList || []);
       setAgentSelected(value);
     }
+    console.log(tree,value,"tree")
   }, [managerAssigned, value, tree]);
 
   const handleChangeAgent = async (e) => {

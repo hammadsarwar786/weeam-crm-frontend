@@ -467,8 +467,10 @@ export default function CheckTable(props) {
           }
         })
         fetchData();
+        toast.success(`Request is sucessfully ${isApproved == "accept"?"approved":"rejected"}`);
     }catch(error){
          console.log(error,"error")
+         toast.success(`Request cannot be ${isApproved == "accept"?"approved":"rejected"}`);
     }
   }
 

@@ -124,9 +124,6 @@ const AdvancedSearchModal = ({
                 <option value="wrong_number">Wrong Number</option>
                 <option value="broker">Broker</option>
                 <option value="voice_mail">Voice Mail</option>
-                   <option value="will_attend_the_show">Will attend the show</option>
-                <option value="attended_the_show">Attended the show</option>
-                <option value="callback">Callback</option>
                 <option value="request">Request</option>
               </Select>
               <Text mb="10px" color={"red"}>
@@ -189,7 +186,222 @@ const AdvancedSearchModal = ({
                   errors.leadPhoneNumber}
               </Text>
             </GridItem>
-
+            <GridItem colSpan={{ base: 12, md: 6 }}>
+              <FormLabel
+                display="flex"
+                ms="4px"
+                fontSize="sm"
+                fontWeight="600"
+                color={"#000"}
+                mb="0"
+                mt={2}
+              >
+                Whatsapp Number
+              </FormLabel>
+              <Input
+                fontSize="sm"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values?.leadWhatsappNumber}
+                name="leadWhatsappNumber"
+                placeholder="Search by Whatsapp Number"
+                fontWeight="500"
+              />
+              <Text mb="10px" color={"red"}>
+                {" "}
+                {errors.leadWhatsappNumber &&
+                  touched.leadWhatsappNumber &&
+                  errors.leadWhatsappNumber}
+              </Text>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, md: 6 }}>
+              <FormLabel
+                display="flex"
+                ms="4px"
+                fontSize="sm"
+                fontWeight="600"
+                color={"#000"}
+                mb="0"
+                mt={2}
+              >
+                Lead Address
+              </FormLabel>
+              <Input
+                fontSize="sm"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values?.leadAddress}
+                name="leadAddress"
+                placeholder="Search by Address"
+                fontWeight="500"
+              />
+              <Text mb="10px" color={"red"}>
+                {" "}
+                {errors.leadAddress &&
+                  touched.leadAddress &&
+                  errors.leadAddress}
+              </Text>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, md: 6 }}>
+              <FormLabel
+                display="flex"
+                ms="4px"
+                fontSize="sm"
+                fontWeight="600"
+                color={"#000"}
+                mb="0"
+                mt={2}
+              >
+                Nationality
+              </FormLabel>
+              <Input
+                fontSize="sm"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values?.nationality}
+                name="nationality"
+                placeholder="Search by Nationaity"
+                fontWeight="500"
+              />
+              <Text mb="10px" color={"red"}>
+                {" "}
+                {errors.nationality &&
+                  touched.nationality &&
+                  errors.nationality}
+              </Text>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, md: 6 }}>
+              <FormLabel
+                display="flex"
+                ms="4px"
+                fontSize="sm"
+                fontWeight="600"
+                color={"#000"}
+                mb="0"
+                mt={2}
+              >
+                Country Source
+              </FormLabel>
+              <Input
+                fontSize="sm"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values?.ip}
+                name="ip"
+                placeholder="Search by Country Source"
+                fontWeight="500"
+              />
+              <Text mb="10px" color={"red"}>
+                {" "}
+                {errors.ip && touched.ip && errors.ip}
+              </Text>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, md: 6 }}>
+              <FormLabel
+                display="flex"
+                ms="4px"
+                fontSize="sm"
+                fontWeight="600"
+                color={"#000"}
+                mb="0"
+                mt={2}
+              >
+                Lead Campaign
+              </FormLabel>
+              <Input
+                fontSize="sm"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values?.leadCampaign}
+                name="leadCampaign"
+                placeholder="Search by Lead Campaign"
+                fontWeight="500"
+              />
+              <Text mb="10px" color={"red"}>
+                {" "}
+                {errors.leadCampaign &&
+                  touched.leadCampaign &&
+                  errors.leadCampaign}
+              </Text>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, md: 6 }}>
+              <FormLabel
+                display="flex"
+                ms="4px"
+                fontSize="sm"
+                fontWeight="600"
+                color={"#000"}
+                mb="0"
+                mt={2}
+              >
+                Lead Medium
+              </FormLabel>
+              <Input
+                fontSize="sm"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values?.leadSource}
+                name="nationality"
+                placeholder="Search by Lead Source"
+                fontWeight="500"
+              />
+              <Text mb="10px" color={"red"}>
+                {" "}
+                {errors.leadSource && touched.leadSource && errors.leadSource}
+              </Text>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, md: 6 }}>
+              <FormLabel
+                display="flex"
+                ms="4px"
+                fontSize="sm"
+                fontWeight="600"
+                color={"#000"}
+                mb="0"
+                mt={2}
+              >
+                Time To Call
+              </FormLabel>
+              <Input
+                fontSize="sm"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values?.leadSource}
+                name="timetocall"
+                placeholder="Search by Timetocall"
+                fontWeight="500"
+              />
+              <Text mb="10px" color={"red"}>
+                {" "}
+                {errors.timetocall && touched.timetocall && errors.timetocall}
+              </Text>
+            </GridItem>
+            <GridItem colSpan={{ base: 12, md: 6 }}>
+              <FormLabel
+                display="flex"
+                ms="4px"
+                fontSize="sm"
+                fontWeight="600"
+                color={"#000"}
+                mb="0"
+                mt={2}
+              >
+                Are you in UAE
+              </FormLabel>
+              <Input
+                fontSize="sm"
+                onChange={handleChange}
+                onBlur={handleBlur}
+                value={values?.r_u_in_uae}
+                name="r_u_in_uae"
+                placeholder="Search by Are you in UAE"
+                fontWeight="500"
+              />
+              <Text mb="10px" color={"red"}>
+                {" "}
+                {errors.r_u_in_uae && touched.r_u_in_uae && errors.r_u_in_uae}
+              </Text>
+            </GridItem>
             {user?.role === "superAdmin" && (
               <GridItem colSpan={{ base: 12, md: 6 }}>
                 <FormLabel
@@ -224,12 +436,9 @@ const AdvancedSearchModal = ({
                           </option>
                         );
                       })}
-                      <option
-                            key={-1}
-                            value={-1}
-                          >
-                            No Manager
-                          </option>
+                    <option key={-1} value={-1}>
+                      No Manager
+                    </option>
                   </Select>
                 </Box>
 
@@ -278,12 +487,9 @@ const AdvancedSearchModal = ({
                             </option>
                           );
                         })}
-                         <option
-                            key={-1}
-                            value={-1}
-                          >
-                            No Agent
-                          </option>
+                    <option key={-1} value={-1}>
+                      No Agent
+                    </option>
                   </Select>
                 </Box>
 

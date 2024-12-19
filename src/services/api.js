@@ -71,7 +71,7 @@ export const deleteManyApi = async (path, data, server="baseUrl") => {
     }
 }
 
-export const getApi = async (path, id, server="baseUrl") => {
+export const getApi = async (path, id, server="baseUrl",source) => {
     try {
         if (id) {
             let result = await axios.get(constant[server] + path + id, {
@@ -82,10 +82,12 @@ export const getApi = async (path, id, server="baseUrl") => {
             return result
         }
         else {
+            console.log(source,"cancelToken")
             let result = await axios.get(constant[server] + path, {
                 headers: {
                     Authorization: localStorage.getItem("token") || sessionStorage.getItem("token")
-                }
+                },
+                ...(source && {cancelToken: source.token})
             })
             return result
         }
